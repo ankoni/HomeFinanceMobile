@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">HomeFinanceMobile</string>
+    <string name="table_header_amount">Сумма</string>
+    <string name="table_header_category">Категория</string>
+    <string name="table_header_account">Счет</string>
+    <string name="table_header_date">Дата</string>
+</resources>
