@@ -4,17 +4,17 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import main.homefinancemobile.common.SimpleIdNameObj;
 import main.homefinancemobile.utils.ParseDate;
 
-public class RecordFormData {
-    private String id;
+public class RecordData extends CommonTableData {
     private Float amount;
-    private String category;
-    private String account;
+    private SimpleIdNameObj category;
+    private SimpleIdNameObj account;
     private Date date;
 
-    public RecordFormData(String id, Float amount, String category, String account, Date date) {
-        this.id = id;
+    public RecordData(String id, Float amount, SimpleIdNameObj category, SimpleIdNameObj account, Date date) {
+        super(id, null);
         this.amount = amount;
         this.category = category;
         this.account = account;
@@ -24,25 +24,21 @@ public class RecordFormData {
     public List<TableRowData> convertToTableRowData() {
         List<TableRowData> tableRowData = new ArrayList<>();
         tableRowData.add(new TableRowData("amount", String.valueOf(this.getAmount())));
-        tableRowData.add(new TableRowData("category", this.getCategory()));
-        tableRowData.add(new TableRowData("account", this.getAccount()));
+        tableRowData.add(new TableRowData("category", this.getCategory().getName()));
+        tableRowData.add(new TableRowData("account", this.getAccount().getName()));
         tableRowData.add(new TableRowData("date", ParseDate.parseDateToString(this.getDate())));
         return tableRowData;
-    }
-
-    public String getId() {
-        return this.id;
     }
 
     public Float getAmount() {
         return this.amount;
     }
 
-    public String getAccount() {
+    public SimpleIdNameObj getAccount() {
         return this.account;
     }
 
-    public String getCategory() {
+    public SimpleIdNameObj getCategory() {
         return this.category;
     }
 

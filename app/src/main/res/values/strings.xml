@@ -1,7 +1,24 @@
 <resources>
     <string name="app_name">HomeFinanceMobile</string>
+    <string name="record_title">Записи</string>
+    <string name="account_title">Счета</string>
+    <string name="categories_title">Категории</string>
+    <!-- Таблицы -->
+    <string name="obj_name">Название</string>
+    <string name="balance">Баланс</string>
+    <string name="update_date">Дата обновления</string>
     <string name="table_header_amount">Сумма</string>
     <string name="table_header_category">Категория</string>
     <string name="table_header_account">Счет</string>
     <string name="table_header_date">Дата</string>
+    <string name="open">open</string>
+    <string name="close">close</string>
+    <string name="add">Добавить</string>
+    <string name="edit">Изменить</string>
+
+    <string name="income">Доход</string>
+    <string name="expance">Расход</string>
+
+    <!-- tags -->
+    <string name="account_card">account_card</string>
 </resources>

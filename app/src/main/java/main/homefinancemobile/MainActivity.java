@@ -1,80 +1,79 @@
 package main.homefinancemobile;
 
-import android.content.Context;
-import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import com.google.android.material.navigation.NavigationView;
+
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.TableLayout;
-import android.widget.TableRow;
+import android.view.MenuItem;
 import android.widget.TextView;
 
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 
-import main.homefinancemobile.database.DBHelper;
-import main.homefinancemobile.model.RecordFormData;
-import main.homefinancemobile.model.TableRowData;
-import main.homefinancemobile.record.form.AddRecordForm;
-import main.homefinancemobile.table.TableActivity;
-import main.homefinancemobile.utils.ParseDate;
 
-public class MainActivity extends AppCompatActivity {
-    DBHelper dbHelper;
-    FloatingActionButton addButton;
-    TableLayout financeTable;
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+    NavigationView navigation;
+    DrawerLayout drawerLayout;
+    ActionBarDrawerToggle toggle;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        financeTable = findViewById(R.id.financeTable);
+        //меню
+        navigation = findViewById(R.id.navigation);
+        navigation.setNavigationItemSelectedListener(this);
+        TextView totalBalance = navigation.findViewById(R.id.totalBalance);
 
-        dbHelper = new DBHelper(this);
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        Cursor c = db.query("Records", null, null, null, null, null, null);
-        if (c.moveToFirst()) {
-            int idColIndex = c.getColumnIndex("id");
-            int amountColIndex = c.getColumnIndex("amount");
-            int categoryColIndex = c.getColumnIndex("category_id");
-            int accountColIndex = c.getColumnIndex("account_id");
-            int recordDateColIndex = c.getColumnIndex("record_date");
-            do {
-                try {
-                    RecordFormData record = new RecordFormData(
-                            c.getString(idColIndex),
-                            c.getFloat(amountColIndex),
-                            c.getString(categoryColIndex),
-                            c.getString(accountColIndex),
-                            ParseDate.getDateFromString(c.getString(recordDateColIndex))
-                    );
-                    TableActivity.addRow(record, financeTable, this);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-            } while (c.moveToNext());
-        } else {
-            TextView text = new TextView(this);
-            text.setText("No records.");
-            financeTable.addView(text);
+        // создаем кнопку для открытия меню
+        drawerLayout = findViewById(R.id.mainDrawerLayout);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+        toggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.open, R.string.close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        //базовый фрагмент
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                    new RecordTableFragment()).commit();
+            navigation.setCheckedItem(R.id.userRecords);
+            setTitle(R.string.record_title);
         }
+    }
 
-        dbHelper.close();
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (toggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
-        addButton = findViewById(R.id.addRecord);
-
-        final Context context = this;
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(context, AddRecordForm.class);
-                startActivity(intent);
-            }
-        });
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.userRecords:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new RecordTableFragment()).commit();
+                setTitle(R.string.record_title);
+                break;
+            case R.id.userAccount:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new UserAccountFragment()).commit();
+                setTitle(R.string.account_title);
+                break;
+            case R.id.userCategory:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new UserCategories()).commit();
+                setTitle(R.string.categories_title);
+                break;
+        }
+        drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
     }
 }

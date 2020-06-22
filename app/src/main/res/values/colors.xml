@@ -1,6 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#6200EE</color>
-    <color name="colorPrimaryDark">#3700B3</color>
-    <color name="colorAccent">#03DAC5</color>
+
+    <color name="lightText">#BFBFBF</color>
+    <color name="darkText">#363636</color>
+    <color name="rowText">#515151</color>
+
+    <color name="colorPrimary">#068A9C</color>
+    <color name="colorPrimaryDark">#01505A</color>
+    <color name="colorPrimaryLight">#99DBE4</color>
+
+    <color name="colorSecond">#FFAA05</color>
+    <color name="colorSecondLight">#FFE2A9</color>
+    <color name="colorSecondMiddle">#FFC444</color>
+
+    <!-- старые  -->
+    <color name="colorAccent">#69D2BD</color>
+    <color name="colorPrimaryMiddle">#37A48F</color>
+    <color name="colorSecondDark">#A6731C</color>
+    <color name="colorSecondLighter">#FFC7A2</color>
+    <color name="colorThird">#F35168</color>
+    <color name="colorThirdMiddle">#B65B68</color>
+    <color name="colorThirdDark">#9E1A2D</color>
+    <color name="colorThirdLight">#F97D8E</color>
+    <color name="colorThirdLighter">#F99EAA</color>
+
+    <color name="tableBorder">#4D4D4D</color>
+    <color name="blackTextColor">#383838</color>
 </resources>
