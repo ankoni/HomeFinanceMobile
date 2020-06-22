@@ -25,6 +25,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.text.ParseException;
@@ -47,6 +48,8 @@ public class UserAccountFragment extends Fragment implements CardRecyclerAdapter
     FloatingActionButton addButton;
     ArrayList<AccountData> accountDataList = new ArrayList<>();
     CardRecyclerAdapter mCardRecyclerAdapter;
+    NavigationView navigation;
+    TextView totalBalance;
 
     public UserAccountFragment() {
         // Required empty public constructor
@@ -67,6 +70,9 @@ public class UserAccountFragment extends Fragment implements CardRecyclerAdapter
         mCardRecyclerAdapter = new CardRecyclerAdapter(accountDataList, this);
         accountContainer.setAdapter(mCardRecyclerAdapter);
         addButton = view.findViewById(R.id.addRecord);
+
+        navigation = getActivity().findViewById(R.id.navigation);
+        totalBalance = navigation.findViewById(R.id.totalBalance);
 
         //добавление записи
         addButton.setOnClickListener(new View.OnClickListener() {
@@ -92,7 +98,6 @@ public class UserAccountFragment extends Fragment implements CardRecyclerAdapter
                             c.getFloat(balanceColIndex),
                             ParseDate.getDateFromString(c.getString(dateColIndex))
                     );
-                    // AccountData.renderToCard(view.getContext(), accountContainer, accountData);
                     accountDataList.add(accountData);
                 } catch (ParseException e) {
                     e.printStackTrace();
@@ -171,6 +176,7 @@ public class UserAccountFragment extends Fragment implements CardRecyclerAdapter
         ft.detach(frg);
         ft.attach(frg);
         ft.commit();
+        ((MainActivity)getActivity()).setTotalBalance();
     }
 
     @Override

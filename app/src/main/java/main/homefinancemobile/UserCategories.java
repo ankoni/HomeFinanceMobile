@@ -9,7 +9,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -19,29 +18,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import main.homefinancemobile.common.ConstVariables;
-import main.homefinancemobile.common.SimpleIdNameObj;
 import main.homefinancemobile.database.DBHelper;
-import main.homefinancemobile.form.AccountForm;
 import main.homefinancemobile.form.CategoryFormDialog;
 import main.homefinancemobile.fragments.category.ExpCategoryList;
-import main.homefinancemobile.model.AccountData;
 import main.homefinancemobile.model.CategoryData;
-import main.homefinancemobile.table.TableActivity;
-import main.homefinancemobile.utils.ParseDate;
 
 public class UserCategories extends Fragment implements ExpCategoryList.CategoryClickListener {
     ExpandableListView categoryList;

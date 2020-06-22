@@ -11,24 +11,29 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import java.text.ParseException;
 import java.util.Objects;
+
+import main.homefinancemobile.database.DBHelper;
+import main.homefinancemobile.model.AccountData;
 
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-
+    DBHelper dbHelper;
     NavigationView navigation;
     DrawerLayout drawerLayout;
     ActionBarDrawerToggle toggle;
+    TextView totalBalance;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        dbHelper = new DBHelper(this);
         //меню
         navigation = findViewById(R.id.navigation);
         navigation.setNavigationItemSelectedListener(this);
-        TextView totalBalance = navigation.findViewById(R.id.totalBalance);
 
         // создаем кнопку для открытия меню
         drawerLayout = findViewById(R.id.mainDrawerLayout);
@@ -44,6 +49,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             navigation.setCheckedItem(R.id.userRecords);
             setTitle(R.string.record_title);
         }
+
+        totalBalance = navigation.getHeaderView(0).findViewById(R.id.totalBalance);
+        setTotalBalance();
     }
 
     @Override
@@ -75,5 +83,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    public void setTotalBalance() {
+        totalBalance.setText(AccountData.getTotalBalance(dbHelper).toString() + "p.");
     }
 }

@@ -107,18 +107,17 @@ public class AccountData extends CommonTableData {
         return account;
     }
 
-    public static void renderToCard(Context context, RecyclerView container, AccountData data) {
-        View card = View.inflate(container.getContext(), R.layout.account_card, null);
-
-        TextView accountName = card.findViewById(R.id.accountName);
-        TextView accountBalance = card.findViewById(R.id.accountBalance);
-        TextView accountUpdate = card.findViewById(R.id.accountLastUpdate);
-
-        accountName.setText(data.getName());
-        accountBalance.setText(data.getBalance().toString() + " p.");
-        accountUpdate.setText(ParseDate.parseDateToString(data.getUpdateDate()));
-
-        container.addView(card);
+    public static Float getTotalBalance(DBHelper dbHelper) {
+        Float totalBalance = (float) 0;
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        Cursor c = db.query("Accounts", new String[]{"balance"}, "del_date is null", null, null, null, null);
+        if (c.moveToFirst()) {
+            int balanceColIndex = c.getColumnIndex("balance");
+            do {
+                totalBalance += c.getFloat(balanceColIndex);
+            } while (c.moveToNext());
+        }
+        return totalBalance;
     }
 }
 
