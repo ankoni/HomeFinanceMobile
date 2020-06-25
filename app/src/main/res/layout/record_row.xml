@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/amountRow"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@mipmap/row"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:text="00.00 " />
+
+    <TextView
+        android:id="@+id/categoryRow"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@mipmap/row"
+        android:gravity="center_vertical"
+        android:paddingStart="8dp"
+        android:text="@string/categories_title" />
+
+    <TextView
+        android:id="@+id/accountRow"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@mipmap/row"
+        android:gravity="center_vertical"
+        android:paddingStart="8dp"
+        android:text="@string/income" />
+
+    <TextView
+        android:id="@+id/dateRow"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@mipmap/row"
+        android:gravity="center_vertical"
+        android:paddingStart="8dp"
+        android:paddingEnd="16dp"
+        android:text="@string/table_header_date" />
+</LinearLayout>

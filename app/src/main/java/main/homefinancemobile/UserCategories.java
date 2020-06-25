@@ -23,6 +23,7 @@ import android.widget.TextView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,6 +31,7 @@ import main.homefinancemobile.database.DBHelper;
 import main.homefinancemobile.form.CategoryFormDialog;
 import main.homefinancemobile.fragments.category.ExpCategoryList;
 import main.homefinancemobile.model.CategoryData;
+import main.homefinancemobile.utils.ParseDate;
 
 public class UserCategories extends Fragment implements ExpCategoryList.CategoryClickListener {
     ExpandableListView categoryList;
@@ -119,6 +121,14 @@ public class UserCategories extends Fragment implements ExpCategoryList.Category
         db.update("Categories", cv, "id = ?", new String[] { id });
     }
 
+    public static void deleteCategory(Context context, String id) {
+        DBHelper dbHelper = new DBHelper(context);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("del_date", ParseDate.parseDateToString(new Date()));
+        db.update("Categories", cv, "id = ?", new String[] { id });
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode == Activity.RESULT_OK) {
@@ -132,7 +142,7 @@ public class UserCategories extends Fragment implements ExpCategoryList.Category
 
         dbHelper = new DBHelper(this.getContext());
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        Cursor c = db.query("Categories", null, null, null, null, null, null);
+        Cursor c = db.query("Categories", null, "del_date is null", null, null, null, null);
         if (c.moveToFirst()) {
             listDataHeader = new ArrayList<String>();
             listDataChild = new HashMap<String, List<CategoryData>>();

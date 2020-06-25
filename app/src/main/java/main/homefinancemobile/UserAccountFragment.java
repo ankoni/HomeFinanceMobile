@@ -11,6 +11,7 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -22,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -30,12 +32,14 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import main.homefinancemobile.database.DBHelper;
 import main.homefinancemobile.form.AccountForm;
 import main.homefinancemobile.fragments.account.CardRecyclerAdapter;
 import main.homefinancemobile.model.AccountData;
+import main.homefinancemobile.model.DailyBalance;
 import main.homefinancemobile.model.TableRowData;
 import main.homefinancemobile.utils.ParseDate;
 
@@ -84,7 +88,7 @@ public class UserAccountFragment extends Fragment implements CardRecyclerAdapter
 
         dbHelper = new DBHelper(this.getContext());
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        Cursor c = db.query("Accounts", null, null, null, null, null, null);
+        Cursor c = db.query("Accounts", null, "del_date is null", null, null, null, null);
         if (c.moveToFirst()) {
             int idColIndex = c.getColumnIndex("id");
             int nameColIndex = c.getColumnIndex("name");
@@ -109,8 +113,8 @@ public class UserAccountFragment extends Fragment implements CardRecyclerAdapter
             TextView text = new TextView(this.getContext());
             text.setPadding(0, 40, 0, 0);
             text.setGravity(Gravity.CENTER);
-            text.setText("No records.");
-            accountContainer.addView(text);
+            text.setText("No accounts.");
+            ((ConstraintLayout)view.findViewById(R.id.accountView)).addView(text);
         }
         dbHelper.close();
         return view;
@@ -136,7 +140,7 @@ public class UserAccountFragment extends Fragment implements CardRecyclerAdapter
         accountFormDialog.show(getFragmentManager().beginTransaction(), "edit");
     }
 
-    public static void addNewRecord(Context context, AccountData data) {
+    public static void addNewAccount(Context context, AccountData data) throws ParseException {
         DBHelper dbHelper = new DBHelper(context);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -146,9 +150,10 @@ public class UserAccountFragment extends Fragment implements CardRecyclerAdapter
         cv.put("create_date", ParseDate.parseDateToString(data.getCreateDate()));
         cv.put("update_date", ParseDate.parseDateToString(data.getUpdateDate()));
         db.insert("Accounts", null, cv);
+        DailyBalance.updateLastDailyBalance(context, data.getId());
     }
 
-    public static void editRecord(Context context, AccountData data) {
+    public static void editAccount(Context context, AccountData data) {
         DBHelper dbHelper = new DBHelper(context);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -156,10 +161,12 @@ public class UserAccountFragment extends Fragment implements CardRecyclerAdapter
         db.update("Accounts", cv, "id = ?", new String[] { data.getId() });
     }
 
-    public static void deleteRecord(Context context, String id) {
+    public static void deleteAccount(Context context, String id) {
         DBHelper dbHelper = new DBHelper(context);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        db.delete("Accounts","id = ?", new String[] { id });
+        ContentValues cv = new ContentValues();
+        cv.put("del_date", ParseDate.parseDateToString(new Date()));
+        db.update("Accounts", cv, "id = ?", new String[] { id });
     }
 
     @Override

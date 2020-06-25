@@ -2,25 +2,21 @@ package main.homefinancemobile.form;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.res.ColorStateList;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDialogFragment;
-import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+import java.text.ParseException;
 import java.util.Date;
 import java.util.UUID;
 
@@ -29,7 +25,6 @@ import main.homefinancemobile.UserAccountFragment;
 import main.homefinancemobile.common.ConstVariables;
 import main.homefinancemobile.database.DBHelper;
 import main.homefinancemobile.model.AccountData;
-import main.homefinancemobile.utils.ParseDate;
 import main.homefinancemobile.utils.Validate;
 
 /**
@@ -77,7 +72,11 @@ public class AccountForm extends AppCompatDialogFragment {
                 accountName = view.findViewById(R.id.accountNameFieldText);
                 accountBalance = view.findViewById(R.id.accountBalanceFieldText);
                 if (validateForm(view)) {
-                    initValueForm();
+                    try {
+                        initValueForm();
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
                     getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, getActivity().getIntent());
                 }
             }
@@ -86,7 +85,7 @@ public class AccountForm extends AppCompatDialogFragment {
             builder.setNeutralButton("Удалить", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    UserAccountFragment.deleteRecord(getContext(), id);
+                    UserAccountFragment.deleteAccount(getContext(), id);
                     getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, getActivity().getIntent());
                 }
             });
@@ -98,7 +97,7 @@ public class AccountForm extends AppCompatDialogFragment {
     /**
      * запись нового счета
      */
-    private void initValueForm() {
+    private void initValueForm() throws ParseException {
         AccountData accountData = new AccountData(
                 this.id == null ? UUID.randomUUID().toString() : this.id,
                 accountName.getText().toString(),
@@ -107,9 +106,9 @@ public class AccountForm extends AppCompatDialogFragment {
                 new Date()
         );
         if (editing) {
-            UserAccountFragment.editRecord(getContext(), accountData);
+            UserAccountFragment.editAccount(getContext(), accountData);
         } else {
-            UserAccountFragment.addNewRecord(getContext(), accountData);
+            UserAccountFragment.addNewAccount(getContext(), accountData);
         }
     }
 

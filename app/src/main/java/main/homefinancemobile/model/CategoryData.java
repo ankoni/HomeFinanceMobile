@@ -14,6 +14,9 @@ public class CategoryData {
     private String name;
     private String parentId;
 
+    public CategoryData() {
+    }
+
     public CategoryData(String id, String name, String parentId) {
         this.id = id;
         this.name = name;
@@ -47,7 +50,7 @@ public class CategoryData {
     public static List<SimpleIdNameObj> getAllCategories(DBHelper dbHelper) {
         List<SimpleIdNameObj> categoryDataList = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        Cursor c = db.query("Categories", new String[]{"id", "name", "parent_id"}, null, null, null, null, null);
+        Cursor c = db.query("Categories", new String[]{"id", "name", "parent_id"}, "del_date is null", null, null, null, null);
         if (c.moveToFirst()) {
             int idColIndex = c.getColumnIndex("id");
             int nameColIndex = c.getColumnIndex("name");
@@ -76,6 +79,23 @@ public class CategoryData {
             category = new SimpleIdNameObj(
                     c.getString(idColIndex),
                     c.getString(nameColIndex)
+            );
+        }
+        return category;
+    }
+
+    public static CategoryData getCategoryData(DBHelper dbHelper, String id) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        Cursor c = db.query("Categories", new String[]{"id", "name", "parent_id"}, "id = ?", new String[]{id}, null, null, null);
+        CategoryData category = new CategoryData();
+        if (c.moveToFirst()) {
+            int idColIndex = c.getColumnIndex("id");
+            int nameColIndex = c.getColumnIndex("name");
+            int parentColIndex = c.getColumnIndex("parent_id");
+            category = new CategoryData(
+                    c.getString(idColIndex),
+                    c.getString(nameColIndex),
+                    c.getString(parentColIndex)
             );
         }
         return category;

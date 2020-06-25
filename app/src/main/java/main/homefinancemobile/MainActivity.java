@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import java.text.ParseException;
 import java.util.Objects;
 
 import main.homefinancemobile.database.DBHelper;
@@ -79,6 +78,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                         new UserCategories()).commit();
                 setTitle(R.string.categories_title);
+                break;
+            case R.id.dailyBalance:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new DailyBalanceFragment()).commit();
+                setTitle(R.string.daily_balance_title);
                 break;
         }
         drawerLayout.closeDrawer(GravityCompat.START);

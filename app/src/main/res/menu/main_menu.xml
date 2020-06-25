@@ -10,4 +10,7 @@
     <item
         android:id="@+id/userAccount"
         android:title="@string/table_header_account" />
+    <item
+        android:id="@+id/dailyBalance"
+        android:title="@string/daily_balance_title" />
 </menu>

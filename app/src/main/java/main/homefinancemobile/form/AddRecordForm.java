@@ -28,12 +28,14 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import main.homefinancemobile.MainActivity;
 import main.homefinancemobile.R;
 import main.homefinancemobile.common.SimpleIdNameObj;
 import main.homefinancemobile.database.DBHelper;
 import main.homefinancemobile.model.AccountData;
 import main.homefinancemobile.model.CategoryData;
 import main.homefinancemobile.model.CommonTableData;
+import main.homefinancemobile.model.DailyBalance;
 import main.homefinancemobile.model.RecordData;
 import main.homefinancemobile.utils.ParseDate;
 import main.homefinancemobile.utils.Validate;
@@ -42,12 +44,17 @@ import main.homefinancemobile.utils.Validate;
  * Форма для Записи (добавление/редактирование)
  */
 public class AddRecordForm extends Fragment implements AdapterView.OnItemSelectedListener {
+    private RecordData oldRecordData;
+    TextInputEditText amountField;
     private TextInputEditText dateField;
     private DatePickerDialog.OnDateSetListener mDateSetListener;
+    private Spinner accountFieldSpinner;
     private List<SimpleIdNameObj> accounts;
     private SimpleIdNameObj selectedAccount;
+    private Spinner categoryFieldSpinner;
     private List<SimpleIdNameObj> categories;
     private SimpleIdNameObj selectedCategory;
+    Bundle args;
     DBHelper dbHelper;
 
     @Override
@@ -56,6 +63,7 @@ public class AddRecordForm extends Fragment implements AdapterView.OnItemSelecte
         View view = inflater.inflate(R.layout.activity_add_record_form, container, false);
         dbHelper = new DBHelper(this.getContext());
 
+        args = getArguments();
         try {
             loadAccounts(view);
         } catch (ParseException e) {
@@ -65,6 +73,34 @@ public class AddRecordForm extends Fragment implements AdapterView.OnItemSelecte
         renderCalendar(view);
 
         Button createRecordBtn = view.findViewById(R.id.createRecordBtn);
+        amountField = view.findViewById(R.id.amountFieldText);
+
+        if (args != null) {
+            try {
+                oldRecordData = new RecordData(
+                        args.getString("id"),
+                        args.getFloat("amount"),
+                        categories.stream().filter(it -> it.getId().equals(args.getString("categoryId"))).findFirst().orElse(null),
+                        accounts.stream().filter(it -> it.getId().equals(args.getString("accountId"))).findFirst().orElse(null),
+                        ParseDate.getDateFromString(args.getString("date")),
+                        args.getBoolean("includedInBalance")
+                );
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            createRecordBtn.setText("Изменить");
+            amountField.setText(oldRecordData.getAmount().toString());
+            dateField.setText(args.getString("date"));
+
+            // если запись старше 7 дней
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.DATE, -7);
+            if (cal.getTime().compareTo(oldRecordData.getDate()) > 0) {
+                createRecordBtn.setEnabled(false);
+                createRecordBtn.setClickable(false);
+            }
+        }
+
         createRecordBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -75,6 +111,7 @@ public class AddRecordForm extends Fragment implements AdapterView.OnItemSelecte
                 }
             }
         });
+
         return view;
     }
 
@@ -134,13 +171,20 @@ public class AddRecordForm extends Fragment implements AdapterView.OnItemSelecte
      * загрузка списка счетов
      */
     private void loadAccounts(View view) throws ParseException {
-        Spinner accountFieldSpinner = view.findViewById(R.id.accountFieldSpinner);
+        accountFieldSpinner = view.findViewById(R.id.accountFieldSpinner);
         accounts = AccountData.getAllAccounts(dbHelper).stream().map(CommonTableData::convertToSimpleIdNameObj).collect(Collectors.toList());
         List<String> accountNames = accounts.stream().map(it -> it.getName()).collect(Collectors.toList());
         ArrayAdapter<String> adapter = new ArrayAdapter<>(Objects.requireNonNull(getContext()), android.R.layout.simple_spinner_item, accountNames);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         accountFieldSpinner.setAdapter(adapter);
         accountFieldSpinner.setOnItemSelectedListener(this);
+        if (args != null) {
+            String accountId = args.getString("accountId");
+            SimpleIdNameObj account = accounts.stream().filter(it -> it.getId().equals(accountId)).findFirst().orElse(null);
+            if (account != null) {
+                accountFieldSpinner.setSelection(accounts.indexOf(account));
+            }
+        }
     }
 
     /**
@@ -148,7 +192,7 @@ public class AddRecordForm extends Fragment implements AdapterView.OnItemSelecte
      * @param view
      */
     private void loadCategories(View view) {
-        Spinner categoryFieldSpinner = view.findViewById(R.id.categoryFieldSpinner);
+        categoryFieldSpinner = view.findViewById(R.id.categoryFieldSpinner);
         categories = CategoryData.getAllCategories(dbHelper);
 
         List<String> categoryNames = categories.stream().map(it -> it.getName()).collect(Collectors.toList());
@@ -156,26 +200,51 @@ public class AddRecordForm extends Fragment implements AdapterView.OnItemSelecte
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         categoryFieldSpinner.setAdapter(adapter);
         categoryFieldSpinner.setOnItemSelectedListener(this);
+        if (args != null) {
+            String categoryId = args.getString("categoryId");
+            SimpleIdNameObj category = categories.stream().filter(it -> it.getId().equals(categoryId)).findFirst().get();
+            categoryFieldSpinner.setSelection(categories.indexOf(category));
+        }
     }
 
     private void initValueForm() throws ParseException {
-        TextInputEditText amountField = getView().findViewById(R.id.amountFieldText);
-
         Date date = ParseDate.getDateFromString(dateField.getText().toString());
         RecordData recordData = new RecordData(
-                UUID.randomUUID().toString(),
+                oldRecordData != null ? oldRecordData.getId() : UUID.randomUUID().toString(),
                 Float.parseFloat(amountField.getText().toString()),
                 selectedCategory,
                 selectedAccount,
-                date
+                date,
+                oldRecordData == null || oldRecordData.isIncludedInBalance()
         );
         if (validateForm(recordData)) {
-            addNewRecord(recordData);
+            if (oldRecordData != null) {
+                updateRecord(recordData);
+            } else {
+                recordData.setIncludedInBalance(recordData.includingInAccountBalance(dbHelper, recordData.getDate()));
+                addNewRecord(recordData);
+            }
+            if (recordData.isIncludedInBalance() || (oldRecordData != null && oldRecordData.isIncludedInBalance())) {
+                updateAccounts(recordData);
+            }
             getFragmentManager().popBackStack();
         }
     }
 
-    private void addNewRecord(RecordData formData) {
+    private void updateRecord(RecordData recordData) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("amount", recordData.getAmount());
+        cv.put("category_id", recordData.getCategory().getId());
+        cv.put("account_id", recordData.getAccount().getId());
+        cv.put("create_date", ParseDate.parseDateToString(new Date()));
+        cv.put("record_date", ParseDate.parseDateToString(recordData.getDate()));
+        cv.put("description", "");
+        cv.put("included_in_balance", recordData.isIncludedInBalance());
+        db.update("Records", cv, "id = ?", new String[] { recordData.getId() });
+    }
+
+    private void addNewRecord(RecordData formData) throws ParseException {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put("id", formData.getId());
@@ -185,7 +254,14 @@ public class AddRecordForm extends Fragment implements AdapterView.OnItemSelecte
         cv.put("create_date", ParseDate.parseDateToString(new Date()));
         cv.put("record_date", ParseDate.parseDateToString(formData.getDate()));
         cv.put("description", "");
+        cv.put("included_in_balance", formData.isIncludedInBalance() ? 1 : 0);
         db.insert("Records", null, cv);
+    }
+
+    private void deleteRecord(String id) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        db.delete("Records", "id = ?", new String[]{id});
     }
 
     private boolean validateForm(RecordData formData) {
@@ -208,5 +284,61 @@ public class AddRecordForm extends Fragment implements AdapterView.OnItemSelecte
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
         selectedAccount = null;
+    }
+
+    private void updateAccounts(RecordData record) throws ParseException {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+
+        Float amount = record.getAmount();
+        AccountData account = AccountData.getAccount(dbHelper, record.getAccount().getId());
+        Float accountBalance = account.getBalance();
+        if (isNeedToUpdateAccounts(record)) {
+            AccountData prevAccount = AccountData.getAccount(dbHelper, oldRecordData.getAccount().getId());
+
+            Float prevBalance = prevAccount.getBalance();
+            if (oldRecordData.isIncomeRecord(dbHelper)) {
+                prevBalance -= oldRecordData.getAmount();
+            } else {
+                prevBalance += oldRecordData.getAmount();
+            }
+
+            if (account.getId().equals(prevAccount.getId())) {
+                accountBalance = prevBalance;
+            } else {
+                cv.put("balance", prevBalance);
+                db.update("Accounts", cv, "id = ?", new String[] { oldRecordData.getAccount().getId() });
+            }
+        }
+
+        if (isNeedToUpdateAccounts(record) || oldRecordData == null) {
+            if (record.isIncomeRecord(dbHelper)) {
+                accountBalance += amount;
+            } else {
+                accountBalance -= amount;
+            }
+
+            cv.clear();
+            cv.put("balance", accountBalance);
+            if (oldRecordData == null) {
+                cv.put("update_date", ParseDate.parseDateToString(record.getDate()));
+            }
+            //изменение баланса счета, указанного в форме
+            db.update("Accounts", cv, "id = ?", new String[] { record.getAccount().getId() });
+        }
+
+        if (oldRecordData == null) {
+            DailyBalance.updateLastDailyBalance(getContext(), record.getAccount().getId());
+        } else {
+            DailyBalance.updateOldDailyBalance(getContext(), oldRecordData, record);
+        }
+
+        ((MainActivity)getActivity()).setTotalBalance();
+    }
+
+    private boolean isNeedToUpdateAccounts(RecordData updatedData) {
+        return oldRecordData != null && (!oldRecordData.getAmount().equals(updatedData.getAmount())
+                || !oldRecordData.getAccount().equals(updatedData.getAccount())
+                || !oldRecordData.getCategory().equals(updatedData.getCategory()));
     }
 }

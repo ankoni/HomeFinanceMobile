@@ -11,7 +11,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
 
     public DBHelper(Context context) {
-        super(context, "homeFinance", null, 3);
+        super(context, "homeFinance", null, 5);
     }
 
     @Override
@@ -19,6 +19,7 @@ public class DBHelper extends SQLiteOpenHelper {
         createAccountsTable(db);
         createCategoriesTable(db);
         createRecordsTable(db);
+        createAccountDailyBalance(db);
     }
 
     @Override
@@ -26,6 +27,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("drop table if exists Records");
         db.execSQL("drop table if exists Accounts");
         db.execSQL("drop table if exists Categories");
+        db.execSQL("drop table if exists DailyBalance");
         onCreate(db);
     }
 
@@ -89,6 +91,22 @@ public class DBHelper extends SQLiteOpenHelper {
                 "account_id text REFERENCES Accounts(id) ON DELETE CASCADE," +
                 "create_date text," +
                 "record_date text," +
-                "description text)");
+                "description text," +
+                "included_in_balance integer)");
+    }
+
+    /**
+     * Сохранение статистики о ежедневном остатке
+     * account_id - id счета,
+     * balance - остаток на счету,
+     * balance_date - дата
+     * @param db
+     */
+    private void createAccountDailyBalance(SQLiteDatabase db) {
+        db.execSQL("create table DailyBalance (" +
+                "account_id text REFERENCES Accounts(id) ON DELETE CASCADE," +
+                "balance real," +
+                "balance_date text," +
+                "PRIMARY KEY(account_id, balance_date))");
     }
 }

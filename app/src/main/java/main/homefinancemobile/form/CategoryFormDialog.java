@@ -82,6 +82,8 @@ public class CategoryFormDialog extends AppCompatDialogFragment {
             builder.setNeutralButton("Удалить", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
+                    UserCategories.deleteCategory(getContext(), id);
+                    getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, getActivity().getIntent());
                 }
             });
         }

@@ -10,19 +10,23 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TableLayout;
+import android.widget.AdapterView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 import main.homefinancemobile.database.DBHelper;
+import main.homefinancemobile.fragments.record.RecordRowAdapter;
 import main.homefinancemobile.model.AccountData;
 import main.homefinancemobile.model.CategoryData;
 import main.homefinancemobile.model.RecordData;
 import main.homefinancemobile.form.AddRecordForm;
-import main.homefinancemobile.table.TableActivity;
 import main.homefinancemobile.utils.ParseDate;
 
 /**
@@ -31,7 +35,8 @@ import main.homefinancemobile.utils.ParseDate;
 public class RecordTableFragment extends Fragment {
     DBHelper dbHelper;
     FloatingActionButton addButton;
-    TableLayout financeTable;
+    ListView financeTable;
+    List<RecordData> recordDataList;
 
     public RecordTableFragment() {
         // Required empty public constructor
@@ -46,7 +51,7 @@ public class RecordTableFragment extends Fragment {
     public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_record_table, container, false);
-
+        recordDataList = new ArrayList<>();
         financeTable = view.findViewById(R.id.financeTable);
         addButton = view.findViewById(R.id.addRecord);
 
@@ -54,8 +59,7 @@ public class RecordTableFragment extends Fragment {
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new AddRecordForm()).addToBackStack(null).commit();
+                openForm();
             }
         });
 
@@ -69,6 +73,7 @@ public class RecordTableFragment extends Fragment {
             int categoryColIndex = c.getColumnIndex("category_id");
             int accountColIndex = c.getColumnIndex("account_id");
             int recordDateColIndex = c.getColumnIndex("record_date");
+            int includedColIndex = c.getColumnIndex("included_in_balance");
             do {
                 try {
                     RecordData record = new RecordData(
@@ -76,22 +81,52 @@ public class RecordTableFragment extends Fragment {
                             c.getFloat(amountColIndex),
                             CategoryData.getCategory(dbHelper, c.getString(categoryColIndex)),
                             AccountData.getAccount(dbHelper, c.getString(accountColIndex)).convertToSimpleIdNameObj(),
-                            ParseDate.getDateFromString(c.getString(recordDateColIndex))
+                            ParseDate.getDateFromString(c.getString(recordDateColIndex)),
+                            c.getInt(includedColIndex) == 1
                     );
-                    TableActivity.renderRow(record, financeTable, this.getContext());
+                    recordDataList.add(record);
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
             } while (c.moveToNext());
+
+            financeTable.setAdapter(new RecordRowAdapter(this.getActivity(), recordDataList));
+            financeTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    openForm(recordDataList.get(position));
+                }
+            });
         } else {
             TextView text = new TextView(this.getContext());
             text.setPadding(0, 40, 0, 0);
             text.setGravity(Gravity.CENTER);
             text.setText("No records.");
-            financeTable.addView(text);
+            ((LinearLayout)view.findViewById(R.id.tableContainer)).addView(text);
         }
+
         dbHelper.close();
 
         return view;
     }
+
+    private void openForm() {
+        getFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                new AddRecordForm()).addToBackStack(null).commit();
+    }
+
+    private void openForm(RecordData data) {
+        Bundle args = new Bundle();
+        args.putString("id", data.getId());
+        args.putFloat("amount", data.getAmount());
+        args.putString("categoryId", data.getCategory().getId());
+        args.putString("accountId", data.getAccount().getId());
+        args.putString("date", ParseDate.parseDateToString(data.getDate()));
+        args.putBoolean("includedInBalance", data.isIncludedInBalance());
+        AddRecordForm form = new AddRecordForm();
+        form.setArguments(args);
+        getFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                form).addToBackStack(null).commit();
+    }
+
 }

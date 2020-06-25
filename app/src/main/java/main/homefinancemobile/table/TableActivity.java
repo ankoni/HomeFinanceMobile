@@ -2,6 +2,8 @@ package main.homefinancemobile.table;
 
 import android.content.Context;
 import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -12,6 +14,7 @@ import main.homefinancemobile.R;
 import main.homefinancemobile.model.CommonTableData;
 import main.homefinancemobile.model.TableRowData;
 
+// TODO: 24.06.2020 удалить 
 public abstract class TableActivity {
 
     final static String RECORD_ROW_PREFIX = "row_";
