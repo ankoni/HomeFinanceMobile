@@ -21,7 +21,7 @@ import java.util.Date;
 import java.util.UUID;
 
 import main.homefinancemobile.R;
-import main.homefinancemobile.UserAccountFragment;
+import main.homefinancemobile.fragments.account.UserAccountFragment;
 import main.homefinancemobile.common.ConstVariables;
 import main.homefinancemobile.database.DBHelper;
 import main.homefinancemobile.model.AccountData;

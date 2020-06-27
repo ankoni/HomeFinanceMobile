@@ -1,4 +1,4 @@
-package main.homefinancemobile;
+package main.homefinancemobile.fragments.dailybalance;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -20,8 +20,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import main.homefinancemobile.R;
 import main.homefinancemobile.database.DBHelper;
-import main.homefinancemobile.fragments.totalbalance.DailyBalanceListAdapter;
 import main.homefinancemobile.model.AccountData;
 import main.homefinancemobile.model.DailyBalance;
 import main.homefinancemobile.utils.ParseDate;

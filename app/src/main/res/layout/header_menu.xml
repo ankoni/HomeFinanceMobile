@@ -6,12 +6,11 @@
     android:layout_height="160dp"
     android:background="@color/colorPrimary"
     android:clickable="true"
-    android:focusable="true"
     android:foreground="?attr/selectableItemBackgroundBorderless"
     android:gravity="bottom"
     android:orientation="horizontal"
     android:padding="16dp"
-    android:theme="@style/ThemeOverlay.AppCompat.Dark">
+    android:theme="@style/DarkTheme">
 
     <ImageView
         android:id="@+id/nav_header_imageView"
@@ -28,7 +27,7 @@
         android:paddingLeft="20dp">
 
         <TextView
-            android:id="@+id/nav_header_textView"
+            android:id="@+id/userName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -50,5 +49,19 @@
             android:text="00.00 p." />
 
     </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="right|top">
+
+        <Button
+            android:id="@+id/settingBtn"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_gravity="top|end"
+            android:height="20dp"
+            android:background="@mipmap/setting_icon" />
+    </RelativeLayout>
 
 </LinearLayout>

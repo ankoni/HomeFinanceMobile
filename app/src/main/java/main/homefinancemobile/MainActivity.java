@@ -7,14 +7,28 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import java.util.Objects;
 
+import main.homefinancemobile.common.ConstVariables;
 import main.homefinancemobile.database.DBHelper;
+import main.homefinancemobile.fragments.account.UserAccountFragment;
+import main.homefinancemobile.fragments.category.UserCategories;
+import main.homefinancemobile.fragments.dailybalance.DailyBalanceFragment;
+import main.homefinancemobile.fragments.record.RecordTableFragment;
+import main.homefinancemobile.fragments.setting.Setting;
+import main.homefinancemobile.fragments.setting.SettingFragment;
 import main.homefinancemobile.model.AccountData;
+
+import static main.homefinancemobile.R.*;
 
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -23,33 +37,52 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     DrawerLayout drawerLayout;
     ActionBarDrawerToggle toggle;
     TextView totalBalance;
+    TextView userNameText;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
         dbHelper = new DBHelper(this);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        changeTheme(db);
+        setContentView(layout.activity_main);
+
         //меню
-        navigation = findViewById(R.id.navigation);
+        navigation = findViewById(id.navigation);
         navigation.setNavigationItemSelectedListener(this);
 
         // создаем кнопку для открытия меню
-        drawerLayout = findViewById(R.id.mainDrawerLayout);
+        drawerLayout = findViewById(id.mainDrawerLayout);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-        toggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.open, R.string.close);
+        toggle = new ActionBarDrawerToggle(this, drawerLayout, string.open, string.close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
         //базовый фрагмент
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+            getSupportFragmentManager().beginTransaction().replace(id.fragment_container,
                     new RecordTableFragment()).commit();
-            navigation.setCheckedItem(R.id.userRecords);
-            setTitle(R.string.record_title);
+            navigation.setCheckedItem(id.userRecords);
+            setTitle(string.record_title);
         }
 
-        totalBalance = navigation.getHeaderView(0).findViewById(R.id.totalBalance);
+        Button settingBtn = navigation.getHeaderView(0).findViewById(id.settingBtn);
+        settingBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getSupportFragmentManager().beginTransaction().replace(id.fragment_container,
+                        new SettingFragment()).commit();
+                drawerLayout.closeDrawer(navigation);
+                setTitle(string.setting_title);
+            }
+        });
+        userNameText = navigation.getHeaderView(0).findViewById(id.userName);
+        setUserName(Setting.getSettingValue(db, ConstVariables.USER_NAME));
+
+
+
+        totalBalance = navigation.getHeaderView(0).findViewById(id.totalBalance);
         setTotalBalance();
     }
 
@@ -64,25 +97,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.userRecords:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+            case id.userRecords:
+                getSupportFragmentManager().beginTransaction().replace(id.fragment_container,
                         new RecordTableFragment()).commit();
-                setTitle(R.string.record_title);
+                setTitle(string.record_title);
                 break;
-            case R.id.userAccount:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+            case id.userAccount:
+                getSupportFragmentManager().beginTransaction().replace(id.fragment_container,
                         new UserAccountFragment()).commit();
-                setTitle(R.string.account_title);
+                setTitle(string.account_title);
                 break;
-            case R.id.userCategory:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+            case id.userCategory:
+                getSupportFragmentManager().beginTransaction().replace(id.fragment_container,
                         new UserCategories()).commit();
-                setTitle(R.string.categories_title);
+                setTitle(string.categories_title);
                 break;
-            case R.id.dailyBalance:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+            case id.dailyBalance:
+                getSupportFragmentManager().beginTransaction().replace(id.fragment_container,
                         new DailyBalanceFragment()).commit();
-                setTitle(R.string.daily_balance_title);
+                setTitle(string.daily_balance_title);
                 break;
         }
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -91,5 +124,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public void setTotalBalance() {
         totalBalance.setText(AccountData.getTotalBalance(dbHelper).toString() + "p.");
+    }
+
+    public void setUserName(String name) {
+        userNameText.setText(name);
+    }
+
+    public void changeTheme(SQLiteDatabase db ) {
+        if (Setting.getSettingValue(db, ConstVariables.DARK_MODE).equals("1")) {
+            setTheme(style.DarkTheme);
+        } else {
+            setTheme(style.AppTheme);
+        }
     }
 }

@@ -4,6 +4,9 @@
     <string name="account_title">Счета</string>
     <string name="categories_title">Категории</string>
     <string name="daily_balance_title">Ежедневный остаток</string>
+    <string name="setting_title">Настройки</string>
+    <string name="setting_user_name">Имя пользователя</string>
+    <string name="setting_dark_mode">Темная тема</string>
     <!-- Таблицы -->
     <string name="obj_name">Название</string>
     <string name="balance">Баланс</string>

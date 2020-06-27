@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
@@ -6,6 +6,28 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="itemTextColor">@color/blackTextColor</item>
+        <item name="android:textViewStyle">@color/lightText</item>
+        <item name="android:contextPopupMenuStyle">@color/colorPrimary</item>
+        <item name="floatingActionButtonStyle">@color/colorSecondMiddle</item>
     </style>
+    <style name="NavAppTheme" parent="AppTheme">
+        <!-- Customize your theme here. -->
+        <item name="backgroundColor">@color/colorPrimary</item>
+    </style>
+    <!-- Dark application theme. -->
+    <style name="DarkTheme" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="itemTextColor">@color/lightText</item>
+        <item name="android:textViewStyle">@color/lightText</item>
+    </style>
+    <style name="NavDarkTheme" parent="DarkTheme">
+        <!-- Customize your theme here. -->
+        <item name="backgroundColor">@color/colorAccent</item>
+    </style>
+
 
 </resources>

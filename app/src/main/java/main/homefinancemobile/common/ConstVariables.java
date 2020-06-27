@@ -2,6 +2,12 @@ package main.homefinancemobile.common;
 
 public class ConstVariables {
     /**
+     * Имена настроек
+     */
+    public static final String USER_NAME = "user_name";
+    public static final String DARK_MODE = "dark_mode";
+
+    /**
      * Редактирование
      */
     public static final String EDIT = "edit";

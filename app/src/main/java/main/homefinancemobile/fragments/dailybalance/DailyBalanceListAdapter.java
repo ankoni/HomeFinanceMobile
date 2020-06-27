@@ -1,4 +1,4 @@
-package main.homefinancemobile.fragments.totalbalance;
+package main.homefinancemobile.fragments.dailybalance;
 
 import android.app.Activity;
 import android.view.LayoutInflater;

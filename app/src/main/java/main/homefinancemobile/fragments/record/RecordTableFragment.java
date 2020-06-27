@@ -1,4 +1,4 @@
-package main.homefinancemobile;
+package main.homefinancemobile.fragments.record;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -21,6 +21,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+import main.homefinancemobile.R;
 import main.homefinancemobile.database.DBHelper;
 import main.homefinancemobile.fragments.record.RecordRowAdapter;
 import main.homefinancemobile.model.AccountData;

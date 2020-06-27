@@ -11,11 +11,12 @@ public class DBHelper extends SQLiteOpenHelper {
 
 
     public DBHelper(Context context) {
-        super(context, "homeFinance", null, 5);
+        super(context, "homeFinance", null, 7);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        createSettingTable(db);
         createAccountsTable(db);
         createCategoriesTable(db);
         createRecordsTable(db);
@@ -28,6 +29,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("drop table if exists Accounts");
         db.execSQL("drop table if exists Categories");
         db.execSQL("drop table if exists DailyBalance");
+        db.execSQL("drop table if exists Settings");
         onCreate(db);
     }
 
@@ -108,5 +110,24 @@ public class DBHelper extends SQLiteOpenHelper {
                 "balance real," +
                 "balance_date text," +
                 "PRIMARY KEY(account_id, balance_date))");
+    }
+
+
+    /**
+     * Таблица настроек
+     */
+    private void createSettingTable(SQLiteDatabase db) {
+        db.execSQL("create table Settings (" +
+                "setting_name text," +
+                "setting_value text)");
+        ContentValues baseSettings = new ContentValues();
+        baseSettings.put("setting_name", "user_name");
+        baseSettings.put("setting_value", "User");
+        db.insert("Settings", null, baseSettings);
+
+        baseSettings.clear();
+        baseSettings.put("setting_name", "dark_mode");
+        baseSettings.put("setting_value", "0");
+        db.insert("Settings", null, baseSettings);
     }
 }

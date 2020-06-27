@@ -1,4 +1,4 @@
-package main.homefinancemobile;
+package main.homefinancemobile.fragments.category;
 
 import android.app.Activity;
 import android.content.ContentValues;
@@ -27,6 +27,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import main.homefinancemobile.R;
 import main.homefinancemobile.database.DBHelper;
 import main.homefinancemobile.form.CategoryFormDialog;
 import main.homefinancemobile.fragments.category.ExpCategoryList;

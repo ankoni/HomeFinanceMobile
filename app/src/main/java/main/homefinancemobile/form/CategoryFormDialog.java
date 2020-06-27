@@ -19,9 +19,8 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.util.UUID;
 
 import main.homefinancemobile.R;
-import main.homefinancemobile.UserCategories;
+import main.homefinancemobile.fragments.category.UserCategories;
 import main.homefinancemobile.common.ConstVariables;
-import main.homefinancemobile.utils.ParseDate;
 
 public class CategoryFormDialog extends AppCompatDialogFragment {
     private String id;

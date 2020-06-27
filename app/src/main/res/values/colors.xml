@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!--CommonTheme-->
     <color name="lightText">#BFBFBF</color>
     <color name="darkText">#363636</color>
     <color name="rowText">#515151</color>
@@ -26,4 +27,9 @@
 
     <color name="tableBorder">#4D4D4D</color>
     <color name="blackTextColor">#383838</color>
+
+    <!--DarkTheme-->
+    <color name="darkColorPrimary">#025662</color>
+    <color name="darkColorPrimaryDark">#01505A</color>
+    <color name="darkColorPrimaryLight">#99DBE4</color>
 </resources>

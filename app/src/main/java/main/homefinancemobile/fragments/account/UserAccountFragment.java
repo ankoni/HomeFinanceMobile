@@ -1,4 +1,4 @@
-package main.homefinancemobile;
+package main.homefinancemobile.fragments.account;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -35,6 +35,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import main.homefinancemobile.MainActivity;
+import main.homefinancemobile.R;
 import main.homefinancemobile.database.DBHelper;
 import main.homefinancemobile.form.AccountForm;
 import main.homefinancemobile.fragments.account.CardRecyclerAdapter;
