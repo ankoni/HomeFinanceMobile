@@ -32,7 +32,7 @@ import main.homefinancemobile.common.SimpleIdNameObj;
 import main.homefinancemobile.database.DBHelper;
 import main.homefinancemobile.model.AccountData;
 import main.homefinancemobile.model.CategoryData;
-import main.homefinancemobile.model.CommonTableData;
+import main.homefinancemobile.model.CommonData;
 import main.homefinancemobile.model.RecordData;
 import main.homefinancemobile.utils.ParseDate;
 import main.homefinancemobile.utils.Validate;
@@ -51,6 +51,7 @@ public class RecordForm extends Fragment implements AdapterView.OnItemSelectedLi
     private Spinner categoryFieldSpinner;
     private List<SimpleIdNameObj> categories;
     private SimpleIdNameObj selectedCategory;
+    Button calendar;
     Bundle args;
     DBHelper dbHelper;
 
@@ -96,16 +97,14 @@ public class RecordForm extends Fragment implements AdapterView.OnItemSelectedLi
                 createRecordBtn.setEnabled(false);
                 createRecordBtn.setClickable(false);
             }
+            calendar.setVisibility(View.INVISIBLE);
         }
 
-        createRecordBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    initValueForm();
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
+        createRecordBtn.setOnClickListener(v -> {
+            try {
+                getValueForm();
+            } catch (ParseException e) {
+                e.printStackTrace();
             }
         });
 
@@ -123,44 +122,38 @@ public class RecordForm extends Fragment implements AdapterView.OnItemSelectedLi
      */
     private void renderCalendar(View view) {
         dateField = view.findViewById(R.id.dateFieldText);
-        Button calendar = view.findViewById(R.id.calendar);
+        calendar = view.findViewById(R.id.calendar);
 
-        calendar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Calendar cal = Calendar.getInstance();
-                int year = cal.get(Calendar.YEAR);
-                int month = cal.get(Calendar.MONTH);
-                int day = cal.get(Calendar.DAY_OF_MONTH);
-                if (RecordForm.this.dateField.getText().length() != 0) {
-                    try {
-                        year = ParseDate.getYearFromString(dateField.getText().toString());
-                        month = ParseDate.getMonthFromString(dateField.getText().toString());
-                        day = ParseDate.getDayFromString(dateField.getText().toString());
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-
+        calendar.setOnClickListener(v -> {
+            Calendar cal = Calendar.getInstance();
+            int year = cal.get(Calendar.YEAR);
+            int month = cal.get(Calendar.MONTH);
+            int day = cal.get(Calendar.DAY_OF_MONTH);
+            if (RecordForm.this.dateField.getText().length() != 0) {
+                try {
+                    year = ParseDate.getYearFromString(dateField.getText().toString());
+                    month = ParseDate.getMonthFromString(dateField.getText().toString());
+                    day = ParseDate.getDayFromString(dateField.getText().toString());
+                } catch (ParseException e) {
+                    e.printStackTrace();
                 }
 
-                DatePickerDialog dialog = new DatePickerDialog(
-                        getContext(),
-                        android.R.style.Theme_Holo_Dialog_MinWidth,
-                        mDateSetListener,
-                        year, month, day
-                );
-                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                dialog.show();
             }
+
+            DatePickerDialog dialog = new DatePickerDialog(
+                    getContext(),
+                    android.R.style.Theme_Holo_Dialog_MinWidth,
+                    mDateSetListener,
+                    year, month, day
+            );
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            dialog.show();
         });
 
-        mDateSetListener = new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                month = month + 1;
-                String date = ParseDate.mToMm(dayOfMonth) + "." + ParseDate.mToMm(month) + "." + year;
-                RecordForm.this.dateField.setText(date);
-            }
+        mDateSetListener = (view1, year, month, dayOfMonth) -> {
+            month = month + 1;
+            String date = ParseDate.mToMm(dayOfMonth) + "." + ParseDate.mToMm(month) + "." + year;
+            RecordForm.this.dateField.setText(date);
         };
     }
 
@@ -169,8 +162,8 @@ public class RecordForm extends Fragment implements AdapterView.OnItemSelectedLi
      */
     private void loadAccounts(View view) throws ParseException {
         accountFieldSpinner = view.findViewById(R.id.accountFieldSpinner);
-        accounts = AccountData.getAllAccounts(dbHelper).stream().map(CommonTableData::convertToSimpleIdNameObj).collect(Collectors.toList());
-        List<String> accountNames = accounts.stream().map(it -> it.getName()).collect(Collectors.toList());
+        accounts = AccountData.getAllAccounts(dbHelper).stream().map(CommonData::convertToSimpleIdNameObj).collect(Collectors.toList());
+        List<String> accountNames = accounts.stream().map(SimpleIdNameObj::getName).collect(Collectors.toList());
         ArrayAdapter<String> adapter = new ArrayAdapter<>(Objects.requireNonNull(getContext()), android.R.layout.simple_spinner_item, accountNames);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         accountFieldSpinner.setAdapter(adapter);
@@ -192,7 +185,7 @@ public class RecordForm extends Fragment implements AdapterView.OnItemSelectedLi
         categoryFieldSpinner = view.findViewById(R.id.categoryFieldSpinner);
         categories = CategoryData.getAllCategories(dbHelper);
 
-        List<String> categoryNames = categories.stream().map(it -> it.getName()).collect(Collectors.toList());
+        List<String> categoryNames = categories.stream().map(SimpleIdNameObj::getName).collect(Collectors.toList());
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, categoryNames);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         categoryFieldSpinner.setAdapter(adapter);
@@ -204,7 +197,11 @@ public class RecordForm extends Fragment implements AdapterView.OnItemSelectedLi
         }
     }
 
-    private void initValueForm() throws ParseException {
+    /**
+     * обработка данных формы
+     * @throws ParseException
+     */
+    private void getValueForm() throws ParseException {
         Date date = ParseDate.getDateFromString(dateField.getText().toString());
         RecordData recordData = new RecordData(
                 oldRecordData != null ? oldRecordData.getId() : UUID.randomUUID().toString(),
@@ -216,10 +213,10 @@ public class RecordForm extends Fragment implements AdapterView.OnItemSelectedLi
         );
         if (validateForm(recordData)) {
             if (oldRecordData != null) {
-                RecordData.updateRecord(dbHelper, recordData);
+                recordData.updateRecord(dbHelper);
             } else {
                 recordData.setIncludedInBalance(recordData.includingInAccountBalance(dbHelper, recordData.getDate()));
-                RecordData.addNewRecord(dbHelper, recordData);
+                recordData.addNewRecord(dbHelper);
             }
             if (recordData.isIncludedInBalance() || (oldRecordData != null && oldRecordData.isIncludedInBalance())) {
                 AccountData.updateAccounts(getContext(), dbHelper, oldRecordData, recordData);

@@ -20,7 +20,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.navigation.NavigationView;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -38,13 +37,11 @@ import main.homefinancemobile.utils.ParseDate;
  * Данные о счетах
  */
 public class UserAccountFragment extends Fragment implements CardRecyclerAdapter.OnCardListener {
-    DBHelper dbHelper;
-    RecyclerView accountContainer;
-    FloatingActionButton addButton;
-    ArrayList<AccountData> accountDataList = new ArrayList<>();
-    CardRecyclerAdapter mCardRecyclerAdapter;
-    NavigationView navigation;
-    TextView totalBalance;
+    private DBHelper dbHelper;
+    private RecyclerView accountContainer;
+    private FloatingActionButton addButton;
+    private ArrayList<AccountData> accountDataList = new ArrayList<>();
+    private CardRecyclerAdapter mCardRecyclerAdapter;
 
     public UserAccountFragment() {
         // Required empty public constructor
@@ -66,25 +63,17 @@ public class UserAccountFragment extends Fragment implements CardRecyclerAdapter
         accountContainer.setAdapter(mCardRecyclerAdapter);
         addButton = view.findViewById(R.id.addRecord);
 
-        navigation = getActivity().findViewById(R.id.navigation);
-        totalBalance = navigation.findViewById(R.id.totalBalance);
-
         //добавление записи
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openDialog();
-            }
-        });
+        addButton.setOnClickListener(v -> openDialog());
 
         dbHelper = new DBHelper(this.getContext());
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        initData(db);
+        initData(db, view);
         dbHelper.close();
         return view;
     }
 
-    private void initData(SQLiteDatabase db) {
+    private void initData(SQLiteDatabase db, View view) {
         Cursor c = db.query("Accounts", null, "del_date is null", null, null, null, null);
         if (c.moveToFirst()) {
             int idColIndex = c.getColumnIndex("id");
@@ -111,16 +100,25 @@ public class UserAccountFragment extends Fragment implements CardRecyclerAdapter
             text.setPadding(0, 40, 0, 0);
             text.setGravity(Gravity.CENTER);
             text.setText("No accounts.");
-            ((ConstraintLayout)getView().findViewById(R.id.accountView)).addView(text);
+            ((ConstraintLayout)view.findViewById(R.id.accountView)).addView(text);
         }
+        c.close();
     }
 
+    /**
+     * Открытие диалога для создания
+     */
     private void openDialog() {
         AccountForm accountFormDialog = new AccountForm();
         accountFormDialog.setTargetFragment(this, 1);
         accountFormDialog.show(getFragmentManager().beginTransaction(), "create");
     }
 
+    /**
+     * Открытие диалога для редактирования
+     * @param id
+     * @throws ParseException
+     */
     private void openDialog(String id) throws ParseException {
         AccountData accountData = AccountData.getAccount(dbHelper, id);
         AccountForm accountFormDialog = new AccountForm();
@@ -141,9 +139,13 @@ public class UserAccountFragment extends Fragment implements CardRecyclerAdapter
            updateData();
         }
     }
+
+    /**
+     * обновляет фрагмент
+     */
     private void updateData() {
         accountDataList.clear();
-        Fragment frg = null;
+        Fragment frg;
         frg = this;
         final FragmentTransaction ft = this.getFragmentManager().beginTransaction();
         ft.detach(frg);

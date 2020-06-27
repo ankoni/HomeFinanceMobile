@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import main.homefinancemobile.common.SimpleIdNameObj;
 
 
-public class CommonTableData {
+public class CommonData {
     private String id;
     private String name;
 
@@ -22,9 +22,13 @@ public class CommonTableData {
         return this.name;
     }
 
-    public CommonTableData() {}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public CommonTableData(String id, String name) {
+    public CommonData() {}
+
+    public CommonData(String id, String name) {
         this.id = id;
         this.name = name;
     }

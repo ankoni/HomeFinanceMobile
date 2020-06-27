@@ -11,7 +11,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
 
     public DBHelper(Context context) {
-        super(context, "homeFinance", null, 7);
+        super(context, "homeFinance", null, 1);
     }
 
     @Override
@@ -118,7 +118,7 @@ public class DBHelper extends SQLiteOpenHelper {
      */
     private void createSettingTable(SQLiteDatabase db) {
         db.execSQL("create table Settings (" +
-                "setting_name text," +
+                "setting_name text primary key," +
                 "setting_value text)");
         ContentValues baseSettings = new ContentValues();
         baseSettings.put("setting_name", "user_name");

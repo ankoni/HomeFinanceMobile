@@ -27,19 +27,19 @@ import java.util.stream.Collectors;
 
 import main.homefinancemobile.R;
 import main.homefinancemobile.database.DBHelper;
-import main.homefinancemobile.form.CategoryFormDialog;
+import main.homefinancemobile.form.CategoryForm;
 import main.homefinancemobile.model.CategoryData;
 
 public class UserCategoriesFragment extends Fragment implements ExpCategoryList.CategoryClickListener {
-    ExpandableListView categoryList;
-    ExpandableListAdapter listAdapter;
-    DBHelper dbHelper;
-    FloatingActionButton addButton;
+    private ExpandableListView categoryList;
+    private ExpandableListAdapter listAdapter;
+    private DBHelper dbHelper;
+    private FloatingActionButton addButton;
 
     private List<CategoryData> rootCategories = new ArrayList<>();
     private List<CategoryData> childCategories = new ArrayList<>();
-    List<String> listDataHeader;
-    HashMap<String, List<CategoryData>> listDataChild;
+    private List<String> listDataHeader;
+    private HashMap<String, List<CategoryData>> listDataChild;
     public UserCategoriesFragment() {
         // Required empty public constructor
     }
@@ -56,12 +56,7 @@ public class UserCategoriesFragment extends Fragment implements ExpCategoryList.
         addButton = view.findViewById(R.id.addRecord);
 
         // добавление записи
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openDialog();
-            }
-        });
+        addButton.setOnClickListener(v -> openDialog());
 
         categoryList = view.findViewById(R.id.categoryList);
         categoryList.setDividerHeight(2);
@@ -81,8 +76,8 @@ public class UserCategoriesFragment extends Fragment implements ExpCategoryList.
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         Cursor c = db.query("Categories", null, "del_date is null", null, null, null, null);
         if (c.moveToFirst()) {
-            listDataHeader = new ArrayList<String>();
-            listDataChild = new HashMap<String, List<CategoryData>>();
+            listDataHeader = new ArrayList<>();
+            listDataChild = new HashMap<>();
 
             int idColIndex = c.getColumnIndex("id");
             int nameColIndex = c.getColumnIndex("name");
@@ -122,19 +117,19 @@ public class UserCategoriesFragment extends Fragment implements ExpCategoryList.
     }
 
     private void openDialog() {
-        CategoryFormDialog categoryFormDialog = new CategoryFormDialog();
-        categoryFormDialog.setTargetFragment(this, 1);
-        categoryFormDialog.show(getFragmentManager().beginTransaction(), "category dialog");
+        CategoryForm categoryForm = new CategoryForm();
+        categoryForm.setTargetFragment(this, 1);
+        categoryForm.show(getFragmentManager().beginTransaction(), "category dialog");
     }
     private void openDialog(CategoryData data) {
-        CategoryFormDialog categoryFormDialog = new CategoryFormDialog();
-        categoryFormDialog.setTargetFragment(this, 1);
+        CategoryForm categoryForm = new CategoryForm();
+        categoryForm.setTargetFragment(this, 1);
         Bundle args = new Bundle();
         args.putString("id", data.getId());
         args.putString("name", data.getName());
         args.putString("parent", data.getParentId());
-        categoryFormDialog.setArguments(args);
-        categoryFormDialog.show(getFragmentManager().beginTransaction(), "edit");
+        categoryForm.setArguments(args);
+        categoryForm.show(getFragmentManager().beginTransaction(), "edit");
     }
 
     @Override
@@ -145,7 +140,7 @@ public class UserCategoriesFragment extends Fragment implements ExpCategoryList.
     }
 
     private void updateData() {
-        Fragment frg = null;
+        Fragment frg;
         frg = this;
         final FragmentTransaction ft = this.getFragmentManager().beginTransaction();
         ft.detach(frg);

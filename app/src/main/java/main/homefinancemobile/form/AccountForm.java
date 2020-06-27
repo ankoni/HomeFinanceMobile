@@ -7,6 +7,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDialogFragment;
 
@@ -22,7 +23,6 @@ import java.util.UUID;
 
 import main.homefinancemobile.R;
 import main.homefinancemobile.common.ConstVariables;
-import main.homefinancemobile.database.DBHelper;
 import main.homefinancemobile.model.AccountData;
 import main.homefinancemobile.utils.Validate;
 
@@ -30,17 +30,13 @@ import main.homefinancemobile.utils.Validate;
  * Форма для Счета (добавление/редактирование)
  */
 public class AccountForm extends AppCompatDialogFragment {
-    public String id;
-    public TextInputEditText accountName;
-    public TextInputEditText accountBalance;
-    View view;
-    DBHelper dbHelper;
-    boolean editing = false;
+    private String id;
+    private TextInputEditText accountName;
+    private TextInputEditText accountBalance;
+    private View view;
+    private boolean editing = false;
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -52,8 +48,8 @@ public class AccountForm extends AppCompatDialogFragment {
 
         accountName = view.findViewById(R.id.accountNameFieldText);
         accountBalance = view.findViewById(R.id.accountBalanceFieldText);
-        if (editing) {
-            Bundle args = getArguments();
+        Bundle args = getArguments();
+        if (editing && args != null) {
             id = args.getString("id");
             accountName.setText(args.getString("name"));
             accountBalance.setText(args.getString("balance"));
@@ -61,32 +57,23 @@ public class AccountForm extends AppCompatDialogFragment {
         }
         builder.setView(view)
                 .setTitle("Создание счета")
-                .setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                .setNegativeButton("Отмена", (dialog, which) -> {
+                }).setPositiveButton(editing ? R.string.edit : R.string.add, (dialog, which) -> {
+                    accountName = view.findViewById(R.id.accountNameFieldText);
+                    accountBalance = view.findViewById(R.id.accountBalanceFieldText);
+                    if (validateForm(view)) {
+                        try {
+                            initValueForm();
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                        getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, getActivity().getIntent());
                     }
-                }).setPositiveButton(editing ? R.string.edit : R.string.add, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                accountName = view.findViewById(R.id.accountNameFieldText);
-                accountBalance = view.findViewById(R.id.accountBalanceFieldText);
-                if (validateForm(view)) {
-                    try {
-                        initValueForm();
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-                    getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, getActivity().getIntent());
-                }
-            }
-        });
+                });
         if (editing) {
-            builder.setNeutralButton("Удалить", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    AccountData.deleteAccount(getContext(), id);
-                    getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, getActivity().getIntent());
-                }
+            builder.setNeutralButton("Удалить", (dialog, which) -> {
+                AccountData.deleteAccount(getContext(), id);
+                getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, getActivity().getIntent());
             });
         }
         return builder.create();

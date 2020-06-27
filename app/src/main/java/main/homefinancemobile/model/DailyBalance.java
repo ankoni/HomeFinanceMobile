@@ -69,31 +69,35 @@ public class DailyBalance {
             cv.put("balance_date", ParseDate.parseDateToString(accountData.getUpdateDate()));
             db.insert("DailyBalance", null, cv);
         }
+        c.close();
     }
 
     // изменение ежедневного остатка, если изменяется старая запись из таблицы
-    public static void updateOldDailyBalance(Context context, RecordData oldRecord, @Nullable RecordData newRecord) throws ParseException {
+    public static void updateOldDailyBalance(Context context, RecordData oldRecord, @Nullable RecordData newRecord) {
         DBHelper dbHelper = new DBHelper(context);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-
+        Float oldBalance = null;
         //ищем запись об остатке старого счета
         Cursor oldDailyBalance = db.query("DailyBalance", null, "account_id = ? and balance_date = ?", new String[]{oldRecord.getAccount().getId(), ParseDate.parseDateToString(oldRecord.getDate())}, null, null, null);
         if (oldDailyBalance.moveToFirst()) {
-            Float oldBalance = oldDailyBalance.getFloat(oldDailyBalance.getColumnIndex("balance"));
+            oldBalance = oldDailyBalance.getFloat(oldDailyBalance.getColumnIndex("balance"));
+
             if (oldRecord.isIncomeRecord(dbHelper)) {
                 oldBalance -= oldRecord.getAmount();
             } else {
                 oldBalance += oldRecord.getAmount();
             }
+
             ContentValues cv = new ContentValues();
             cv.put("balance", oldBalance);
             db.update("DailyBalance", cv, "account_id = ? and balance_date = ?", new String[]{oldRecord.getAccount().getId(), ParseDate.parseDateToString(oldRecord.getDate())});
         }
-        //удаление записи если newRecord = null
+        oldDailyBalance.close();
+
         if (newRecord != null) {
             Cursor updatableDailyBalance = db.query("DailyBalance", null, "account_id = ? and balance_date = ?", new String[]{newRecord.getAccount().getId(), ParseDate.parseDateToString(newRecord.getDate())}, null, null, null);
             if (updatableDailyBalance.moveToFirst()) {
-                Float newBalance = oldDailyBalance.getFloat(updatableDailyBalance.getColumnIndex("balance"));
+                Float newBalance = oldRecord.getAccount().getId().equals(newRecord.getAccount().getId()) && oldBalance != null ? oldBalance : updatableDailyBalance.getFloat(updatableDailyBalance.getColumnIndex("balance"));
                 if (newRecord.isIncomeRecord(dbHelper)) {
                     newBalance += newRecord.getAmount();
                 } else {
@@ -103,6 +107,7 @@ public class DailyBalance {
                 cv.put("balance", newBalance);
                 db.update("DailyBalance", cv, "account_id = ? and balance_date = ?", new String[]{newRecord.getAccount().getId(), ParseDate.parseDateToString(newRecord.getDate())});
             }
+            updatableDailyBalance.close();
         }
     }
 }

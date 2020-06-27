@@ -49,12 +49,12 @@ public class DailyBalanceFragment extends Fragment {
         dbHelper = new DBHelper(this.getContext());
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-        initData(db);
+        initData(db, view);
 
         return view;
     }
 
-    private void initData(SQLiteDatabase db) {
+    private void initData(SQLiteDatabase db, View view) {
         Cursor c = db.query("DailyBalance", null, null, null, null, null, null);
         if (c.moveToFirst()) {
             int accountIdColIndex = c.getColumnIndex("account_id");
@@ -84,7 +84,8 @@ public class DailyBalanceFragment extends Fragment {
             text.setPadding(0, 40, 0, 0);
             text.setGravity(Gravity.CENTER);
             text.setText("No records.");
-            ((LinearLayout)getView().findViewById(R.id.totalBalanceFragment)).addView(text);
+            ((LinearLayout)view.findViewById(R.id.totalBalanceFragment)).addView(text);
         }
+        c.close();
     }
 }

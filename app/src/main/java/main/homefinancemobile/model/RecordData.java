@@ -13,7 +13,7 @@ import main.homefinancemobile.common.SimpleIdNameObj;
 import main.homefinancemobile.database.DBHelper;
 import main.homefinancemobile.utils.ParseDate;
 
-public class RecordData extends CommonTableData {
+public class RecordData extends CommonData {
     private Float amount;
     private SimpleIdNameObj category;
     private SimpleIdNameObj account;
@@ -76,36 +76,35 @@ public class RecordData extends CommonTableData {
         return updateAccount.compareTo(recordingDate) < 0 || updateAccount.compareTo(recordingDate) == 0;
     }
 
-    public static void updateRecord(DBHelper dbHelper, RecordData recordData) {
+    public void updateRecord(DBHelper dbHelper) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues cv = new ContentValues();
-        cv.put("amount", recordData.getAmount());
-        cv.put("category_id", recordData.getCategory().getId());
-        cv.put("account_id", recordData.getAccount().getId());
+        cv.put("amount", getAmount());
+        cv.put("category_id", getCategory().getId());
+        cv.put("account_id", getAccount().getId());
         cv.put("create_date", ParseDate.parseDateToString(new Date()));
-        cv.put("record_date", ParseDate.parseDateToString(recordData.getDate()));
+        cv.put("record_date", ParseDate.parseDateToString(getDate()));
         cv.put("description", "");
-        cv.put("included_in_balance", recordData.isIncludedInBalance());
-        db.update("Records", cv, "id = ?", new String[] { recordData.getId() });
+        cv.put("included_in_balance", isIncludedInBalance());
+        db.update("Records", cv, "id = ?", new String[] { getId() });
     }
 
-    public static void addNewRecord(DBHelper dbHelper, RecordData formData) throws ParseException {
+    public void addNewRecord(DBHelper dbHelper) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues cv = new ContentValues();
-        cv.put("id", formData.getId());
-        cv.put("amount", formData.getAmount());
-        cv.put("category_id", formData.getCategory().getId());
-        cv.put("account_id", formData.getAccount().getId());
+        cv.put("id", getId());
+        cv.put("amount", getAmount());
+        cv.put("category_id", getCategory().getId());
+        cv.put("account_id", getAccount().getId());
         cv.put("create_date", ParseDate.parseDateToString(new Date()));
-        cv.put("record_date", ParseDate.parseDateToString(formData.getDate()));
+        cv.put("record_date", ParseDate.parseDateToString(getDate()));
         cv.put("description", "");
-        cv.put("included_in_balance", formData.isIncludedInBalance() ? 1 : 0);
+        cv.put("included_in_balance", isIncludedInBalance() ? 1 : 0);
         db.insert("Records", null, cv);
     }
 
-    private void deleteRecord(DBHelper dbHelper, String id) {
+    public void deleteRecord(DBHelper dbHelper) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        db.delete("Records", "id = ?", new String[]{id});
+        db.delete("Records", "id = ?", new String[]{ getId() });
     }
 }

@@ -13,7 +13,7 @@ import main.homefinancemobile.common.SimpleIdNameObj;
 import main.homefinancemobile.database.DBHelper;
 import main.homefinancemobile.utils.ParseDate;
 
-public class CategoryData extends CommonTableData {
+public class CategoryData extends CommonData {
     private String parentId;
 
     public CategoryData() {
@@ -50,7 +50,7 @@ public class CategoryData extends CommonTableData {
                 categoryDataList.add(category);
             } while (c.moveToNext());
         }
-
+        c.close();
         return categoryDataList;
     }
 
@@ -66,6 +66,7 @@ public class CategoryData extends CommonTableData {
                     c.getString(nameColIndex)
             );
         }
+        c.close();
         return category;
     }
 
@@ -86,29 +87,29 @@ public class CategoryData extends CommonTableData {
         return category;
     }
 
-    public static void addNewCategory(Context context, String id, String name, String parentId) {
+    public void addNewCategory(Context context) {
         DBHelper dbHelper = new DBHelper(context);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues cv = new ContentValues();
-        cv.put("id", id);
-        cv.put("name", name);
-        cv.put("parent_id", parentId);
+        cv.put("id", getId());
+        cv.put("name", getName());
+        cv.put("parent_id", getParentId());
         db.insert("Categories", null, cv);
     }
 
-    public static void updateCategory(Context context, String id, String name) {
+    public void updateCategory(Context context) {
         DBHelper dbHelper = new DBHelper(context);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues cv = new ContentValues();
-        cv.put("name", name);
-        db.update("Categories", cv, "id = ?", new String[] { id });
+        cv.put("name", getName());
+        db.update("Categories", cv, "id = ?", new String[] { getId() });
     }
 
-    public static void deleteCategory(Context context, String id) {
+    public void deleteCategory(Context context) {
         DBHelper dbHelper = new DBHelper(context);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put("del_date", ParseDate.parseDateToString(new Date()));
-        db.update("Categories", cv, "id = ?", new String[] { id });
+        db.update("Categories", cv, "id = ?", new String[] { getId() });
     }
 }

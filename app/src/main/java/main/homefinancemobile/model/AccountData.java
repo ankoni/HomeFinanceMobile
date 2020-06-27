@@ -12,7 +12,7 @@ import java.util.List;
 import main.homefinancemobile.database.DBHelper;
 import main.homefinancemobile.utils.ParseDate;
 
-public class AccountData extends CommonTableData {
+public class AccountData extends CommonData {
     private Float balance;
     private Date createDate;
     private Date delDate;
