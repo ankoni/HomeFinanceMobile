@@ -1,6 +1,8 @@
 package main.homefinancemobile.model;
 
-import java.text.DateFormat;
+import android.content.ContentValues;
+import android.database.sqlite.SQLiteDatabase;
+
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -72,5 +74,38 @@ public class RecordData extends CommonTableData {
         Date updateAccount = AccountData.getAccount(dbHelper, getAccount().getId()).getUpdateDate();
         Date recordingDate = ParseDate.getDateFromString(ParseDate.parseDateToString(recordDate));
         return updateAccount.compareTo(recordingDate) < 0 || updateAccount.compareTo(recordingDate) == 0;
+    }
+
+    public static void updateRecord(DBHelper dbHelper, RecordData recordData) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("amount", recordData.getAmount());
+        cv.put("category_id", recordData.getCategory().getId());
+        cv.put("account_id", recordData.getAccount().getId());
+        cv.put("create_date", ParseDate.parseDateToString(new Date()));
+        cv.put("record_date", ParseDate.parseDateToString(recordData.getDate()));
+        cv.put("description", "");
+        cv.put("included_in_balance", recordData.isIncludedInBalance());
+        db.update("Records", cv, "id = ?", new String[] { recordData.getId() });
+    }
+
+    public static void addNewRecord(DBHelper dbHelper, RecordData formData) throws ParseException {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("id", formData.getId());
+        cv.put("amount", formData.getAmount());
+        cv.put("category_id", formData.getCategory().getId());
+        cv.put("account_id", formData.getAccount().getId());
+        cv.put("create_date", ParseDate.parseDateToString(new Date()));
+        cv.put("record_date", ParseDate.parseDateToString(formData.getDate()));
+        cv.put("description", "");
+        cv.put("included_in_balance", formData.isIncludedInBalance() ? 1 : 0);
+        db.insert("Records", null, cv);
+    }
+
+    private void deleteRecord(DBHelper dbHelper, String id) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        db.delete("Records", "id = ?", new String[]{id});
     }
 }

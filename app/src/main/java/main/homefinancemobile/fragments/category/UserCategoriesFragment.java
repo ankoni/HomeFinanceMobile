@@ -1,8 +1,6 @@
 package main.homefinancemobile.fragments.category;
 
 import android.app.Activity;
-import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -23,7 +21,6 @@ import android.widget.TextView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,11 +28,9 @@ import java.util.stream.Collectors;
 import main.homefinancemobile.R;
 import main.homefinancemobile.database.DBHelper;
 import main.homefinancemobile.form.CategoryFormDialog;
-import main.homefinancemobile.fragments.category.ExpCategoryList;
 import main.homefinancemobile.model.CategoryData;
-import main.homefinancemobile.utils.ParseDate;
 
-public class UserCategories extends Fragment implements ExpCategoryList.CategoryClickListener {
+public class UserCategoriesFragment extends Fragment implements ExpCategoryList.CategoryClickListener {
     ExpandableListView categoryList;
     ExpandableListAdapter listAdapter;
     DBHelper dbHelper;
@@ -45,7 +40,7 @@ public class UserCategories extends Fragment implements ExpCategoryList.Category
     private List<CategoryData> childCategories = new ArrayList<>();
     List<String> listDataHeader;
     HashMap<String, List<CategoryData>> listDataChild;
-    public UserCategories() {
+    public UserCategoriesFragment() {
         // Required empty public constructor
     }
 
@@ -73,72 +68,12 @@ public class UserCategories extends Fragment implements ExpCategoryList.Category
         categoryList.setGroupIndicator(null);
         categoryList.setClickable(true);
 
-        loadData();
+        initData();
 
         return view;
     }
 
-    private void openDialog() {
-        CategoryFormDialog categoryFormDialog = new CategoryFormDialog();
-        categoryFormDialog.setTargetFragment(this, 1);
-        categoryFormDialog.show(getFragmentManager().beginTransaction(), "category dialog");
-    }
-    private void openDialog(CategoryData data) {
-        CategoryFormDialog categoryFormDialog = new CategoryFormDialog();
-        categoryFormDialog.setTargetFragment(this, 1);
-        Bundle args = new Bundle();
-        args.putString("id", data.getId());
-        args.putString("name", data.getName());
-        args.putString("parent", data.getParentId());
-        categoryFormDialog.setArguments(args);
-        categoryFormDialog.show(getFragmentManager().beginTransaction(), "edit");
-    }
-
-    /*
-     * Preparing the list data
-     */
-    private void prepareListData() {
-        rootCategories.forEach(root -> {
-            List<CategoryData> child = childCategories.stream().filter(item ->
-                    item.getParentId().equals(root.getId())).collect(Collectors.toList());
-            listDataChild.put(root.getName(), child);
-        });
-    }
-
-    public static void sendResult(Context context, String id, String name, String parentId) {
-        DBHelper dbHelper = new DBHelper(context);
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put("id", id);
-        cv.put("name", name);
-        cv.put("parent_id", parentId);
-        db.insert("Categories", null, cv);
-    }
-
-    public static void updateCategory(Context context, String id, String name) {
-        DBHelper dbHelper = new DBHelper(context);
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put("name", name);
-        db.update("Categories", cv, "id = ?", new String[] { id });
-    }
-
-    public static void deleteCategory(Context context, String id) {
-        DBHelper dbHelper = new DBHelper(context);
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put("del_date", ParseDate.parseDateToString(new Date()));
-        db.update("Categories", cv, "id = ?", new String[] { id });
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (resultCode == Activity.RESULT_OK) {
-            updateData();
-        }
-    }
-
-    private void loadData() {
+    private void initData() {
         rootCategories = new ArrayList<>();
         childCategories = new ArrayList<>();
 
@@ -173,6 +108,40 @@ public class UserCategories extends Fragment implements ExpCategoryList.Category
             categoryList.addView(text);
         }
         dbHelper.close();
+    }
+
+    /*
+     * Preparing the list data
+     */
+    private void prepareListData() {
+        rootCategories.forEach(root -> {
+            List<CategoryData> child = childCategories.stream().filter(item ->
+                    item.getParentId().equals(root.getId())).collect(Collectors.toList());
+            listDataChild.put(root.getName(), child);
+        });
+    }
+
+    private void openDialog() {
+        CategoryFormDialog categoryFormDialog = new CategoryFormDialog();
+        categoryFormDialog.setTargetFragment(this, 1);
+        categoryFormDialog.show(getFragmentManager().beginTransaction(), "category dialog");
+    }
+    private void openDialog(CategoryData data) {
+        CategoryFormDialog categoryFormDialog = new CategoryFormDialog();
+        categoryFormDialog.setTargetFragment(this, 1);
+        Bundle args = new Bundle();
+        args.putString("id", data.getId());
+        args.putString("name", data.getName());
+        args.putString("parent", data.getParentId());
+        categoryFormDialog.setArguments(args);
+        categoryFormDialog.show(getFragmentManager().beginTransaction(), "edit");
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (resultCode == Activity.RESULT_OK) {
+            updateData();
+        }
     }
 
     private void updateData() {

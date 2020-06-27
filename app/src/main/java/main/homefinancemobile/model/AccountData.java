@@ -1,27 +1,15 @@
 package main.homefinancemobile.model;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-
-import androidx.recyclerview.widget.RecyclerView;
-
-import org.w3c.dom.Text;
 
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import main.homefinancemobile.R;
-import main.homefinancemobile.common.SimpleIdNameObj;
 import main.homefinancemobile.database.DBHelper;
-import main.homefinancemobile.form.AccountForm;
 import main.homefinancemobile.utils.ParseDate;
 
 public class AccountData extends CommonTableData {
@@ -40,9 +28,7 @@ public class AccountData extends CommonTableData {
         return this.createDate;
     }
 
-    public AccountData() {
-        super();
-    }
+    public AccountData() {}
     public AccountData(String id, String name, Float balance, Date update_date) {
         super(id, name);
         this.balance = balance;
@@ -118,6 +104,89 @@ public class AccountData extends CommonTableData {
             } while (c.moveToNext());
         }
         return totalBalance;
+    }
+
+    public static void addNewAccount(Context context, AccountData data) throws ParseException {
+        DBHelper dbHelper = new DBHelper(context);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("id", data.getId());
+        cv.put("name", data.getName());
+        cv.put("balance", data.getBalance());
+        cv.put("create_date", ParseDate.parseDateToString(data.getCreateDate()));
+        cv.put("update_date", ParseDate.parseDateToString(data.getUpdateDate()));
+        db.insert("Accounts", null, cv);
+        DailyBalance.updateLastDailyBalance(context, data.getId());
+    }
+
+    public static void editAccount(Context context, AccountData data) {
+        DBHelper dbHelper = new DBHelper(context);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("name", data.getName());
+        db.update("Accounts", cv, "id = ?", new String[] { data.getId() });
+    }
+
+    public static void deleteAccount(Context context, String id) {
+        DBHelper dbHelper = new DBHelper(context);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("del_date", ParseDate.parseDateToString(new Date()));
+        db.update("Accounts", cv, "id = ?", new String[] { id });
+    }
+
+    public static void updateAccounts(Context context, DBHelper dbHelper, RecordData oldRecordData, RecordData record) throws ParseException {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+
+        Float amount = record.getAmount();
+        AccountData account = AccountData.getAccount(dbHelper, record.getAccount().getId());
+        Float accountBalance = account.getBalance();
+        if (isNeedToUpdateAccounts(oldRecordData, record)) {
+            AccountData prevAccount = AccountData.getAccount(dbHelper, oldRecordData.getAccount().getId());
+
+            Float prevBalance = prevAccount.getBalance();
+            if (oldRecordData.isIncomeRecord(dbHelper)) {
+                prevBalance -= oldRecordData.getAmount();
+            } else {
+                prevBalance += oldRecordData.getAmount();
+            }
+
+            if (account.getId().equals(prevAccount.getId())) {
+                accountBalance = prevBalance;
+            } else {
+                cv.put("balance", prevBalance);
+                db.update("Accounts", cv, "id = ?", new String[] { oldRecordData.getAccount().getId() });
+            }
+        }
+
+        if (isNeedToUpdateAccounts(oldRecordData, record) || oldRecordData == null) {
+            if (record.isIncomeRecord(dbHelper)) {
+                accountBalance += amount;
+            } else {
+                accountBalance -= amount;
+            }
+
+            cv.clear();
+            cv.put("balance", accountBalance);
+            if (oldRecordData == null) {
+                cv.put("update_date", ParseDate.parseDateToString(record.getDate()));
+            }
+            //изменение баланса счета, указанного в форме
+            db.update("Accounts", cv, "id = ?", new String[] { record.getAccount().getId() });
+        }
+
+        if (oldRecordData == null) {
+            DailyBalance.updateLastDailyBalance(context, record.getAccount().getId());
+        } else {
+            DailyBalance.updateOldDailyBalance(context, oldRecordData, record);
+        }
+    }
+
+    private static boolean isNeedToUpdateAccounts(RecordData oldRecordData, RecordData updatedData) {
+        return oldRecordData != null && (!oldRecordData.getAmount().equals(updatedData.getAmount())
+                || !oldRecordData.getAccount().equals(updatedData.getAccount())
+                || !oldRecordData.getCategory().equals(updatedData.getCategory()));
     }
 }
 

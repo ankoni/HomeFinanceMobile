@@ -8,8 +8,6 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="itemTextColor">@color/blackTextColor</item>
         <item name="android:textViewStyle">@color/lightText</item>
-        <item name="android:contextPopupMenuStyle">@color/colorPrimary</item>
-        <item name="floatingActionButtonStyle">@color/colorSecondMiddle</item>
     </style>
     <style name="NavAppTheme" parent="AppTheme">
         <!-- Customize your theme here. -->

@@ -19,8 +19,8 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.util.UUID;
 
 import main.homefinancemobile.R;
-import main.homefinancemobile.fragments.category.UserCategories;
 import main.homefinancemobile.common.ConstVariables;
+import main.homefinancemobile.model.CategoryData;
 
 public class CategoryFormDialog extends AppCompatDialogFragment {
     private String id;
@@ -33,7 +33,7 @@ public class CategoryFormDialog extends AppCompatDialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        View view = inflater.inflate(R.layout.category_form_dialog, null);
+        View view = inflater.inflate(R.layout.form_category_dialog, null);
 
         editing = getTag().equals(ConstVariables.EDIT);
 
@@ -67,12 +67,12 @@ public class CategoryFormDialog extends AppCompatDialogFragment {
                     public void onClick(DialogInterface dialog, int which) {
                         String name = categoryName.getText().toString();
                         if (editing) {
-                            UserCategories.updateCategory(getContext(), id, name);
+                            CategoryData.updateCategory(getContext(), id, name);
                         } else {
                             String id = UUID.randomUUID().toString();
                             RadioButton btn = (RadioButton) view.findViewById(selectParentCategory.getCheckedRadioButtonId());
                             String parentName = btn.getText().toString();
-                            UserCategories.sendResult(getContext(), id, name, parentName.equals("Доход") ? ConstVariables.INCOME_ID : ConstVariables.CONSUMPTION_ID);
+                            CategoryData.addNewCategory(getContext(), id, name, parentName.equals("Доход") ? ConstVariables.INCOME_ID : ConstVariables.CONSUMPTION_ID);
                         }
                         getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, getActivity().getIntent());
                     }
@@ -81,7 +81,7 @@ public class CategoryFormDialog extends AppCompatDialogFragment {
             builder.setNeutralButton("Удалить", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    UserCategories.deleteCategory(getContext(), id);
+                    CategoryData.deleteCategory(getContext(), id);
                     getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, getActivity().getIntent());
                 }
             });

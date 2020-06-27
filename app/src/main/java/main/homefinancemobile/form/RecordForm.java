@@ -1,8 +1,6 @@
 package main.homefinancemobile.form;
 
 import android.app.DatePickerDialog;
-import android.content.ContentValues;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 
@@ -35,7 +33,6 @@ import main.homefinancemobile.database.DBHelper;
 import main.homefinancemobile.model.AccountData;
 import main.homefinancemobile.model.CategoryData;
 import main.homefinancemobile.model.CommonTableData;
-import main.homefinancemobile.model.DailyBalance;
 import main.homefinancemobile.model.RecordData;
 import main.homefinancemobile.utils.ParseDate;
 import main.homefinancemobile.utils.Validate;
@@ -43,7 +40,7 @@ import main.homefinancemobile.utils.Validate;
 /**
  * Форма для Записи (добавление/редактирование)
  */
-public class AddRecordForm extends Fragment implements AdapterView.OnItemSelectedListener {
+public class RecordForm extends Fragment implements AdapterView.OnItemSelectedListener {
     private RecordData oldRecordData;
     TextInputEditText amountField;
     private TextInputEditText dateField;
@@ -60,7 +57,7 @@ public class AddRecordForm extends Fragment implements AdapterView.OnItemSelecte
     @Override
     public View onCreateView(final LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_add_record_form, container, false);
+        View view = inflater.inflate(R.layout.form_record, container, false);
         dbHelper = new DBHelper(this.getContext());
 
         args = getArguments();
@@ -135,7 +132,7 @@ public class AddRecordForm extends Fragment implements AdapterView.OnItemSelecte
                 int year = cal.get(Calendar.YEAR);
                 int month = cal.get(Calendar.MONTH);
                 int day = cal.get(Calendar.DAY_OF_MONTH);
-                if (AddRecordForm.this.dateField.getText().length() != 0) {
+                if (RecordForm.this.dateField.getText().length() != 0) {
                     try {
                         year = ParseDate.getYearFromString(dateField.getText().toString());
                         month = ParseDate.getMonthFromString(dateField.getText().toString());
@@ -162,7 +159,7 @@ public class AddRecordForm extends Fragment implements AdapterView.OnItemSelecte
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
                 month = month + 1;
                 String date = ParseDate.mToMm(dayOfMonth) + "." + ParseDate.mToMm(month) + "." + year;
-                AddRecordForm.this.dateField.setText(date);
+                RecordForm.this.dateField.setText(date);
             }
         };
     }
@@ -219,49 +216,17 @@ public class AddRecordForm extends Fragment implements AdapterView.OnItemSelecte
         );
         if (validateForm(recordData)) {
             if (oldRecordData != null) {
-                updateRecord(recordData);
+                RecordData.updateRecord(dbHelper, recordData);
             } else {
                 recordData.setIncludedInBalance(recordData.includingInAccountBalance(dbHelper, recordData.getDate()));
-                addNewRecord(recordData);
+                RecordData.addNewRecord(dbHelper, recordData);
             }
             if (recordData.isIncludedInBalance() || (oldRecordData != null && oldRecordData.isIncludedInBalance())) {
-                updateAccounts(recordData);
+                AccountData.updateAccounts(getContext(), dbHelper, oldRecordData, recordData);
+                ((MainActivity)getActivity()).setTotalBalance();
             }
             getFragmentManager().popBackStack();
         }
-    }
-
-    private void updateRecord(RecordData recordData) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put("amount", recordData.getAmount());
-        cv.put("category_id", recordData.getCategory().getId());
-        cv.put("account_id", recordData.getAccount().getId());
-        cv.put("create_date", ParseDate.parseDateToString(new Date()));
-        cv.put("record_date", ParseDate.parseDateToString(recordData.getDate()));
-        cv.put("description", "");
-        cv.put("included_in_balance", recordData.isIncludedInBalance());
-        db.update("Records", cv, "id = ?", new String[] { recordData.getId() });
-    }
-
-    private void addNewRecord(RecordData formData) throws ParseException {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put("id", formData.getId());
-        cv.put("amount", formData.getAmount());
-        cv.put("category_id", formData.getCategory().getId());
-        cv.put("account_id", formData.getAccount().getId());
-        cv.put("create_date", ParseDate.parseDateToString(new Date()));
-        cv.put("record_date", ParseDate.parseDateToString(formData.getDate()));
-        cv.put("description", "");
-        cv.put("included_in_balance", formData.isIncludedInBalance() ? 1 : 0);
-        db.insert("Records", null, cv);
-    }
-
-    private void deleteRecord(String id) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        db.delete("Records", "id = ?", new String[]{id});
     }
 
     private boolean validateForm(RecordData formData) {
@@ -284,61 +249,5 @@ public class AddRecordForm extends Fragment implements AdapterView.OnItemSelecte
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
         selectedAccount = null;
-    }
-
-    private void updateAccounts(RecordData record) throws ParseException {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-
-        Float amount = record.getAmount();
-        AccountData account = AccountData.getAccount(dbHelper, record.getAccount().getId());
-        Float accountBalance = account.getBalance();
-        if (isNeedToUpdateAccounts(record)) {
-            AccountData prevAccount = AccountData.getAccount(dbHelper, oldRecordData.getAccount().getId());
-
-            Float prevBalance = prevAccount.getBalance();
-            if (oldRecordData.isIncomeRecord(dbHelper)) {
-                prevBalance -= oldRecordData.getAmount();
-            } else {
-                prevBalance += oldRecordData.getAmount();
-            }
-
-            if (account.getId().equals(prevAccount.getId())) {
-                accountBalance = prevBalance;
-            } else {
-                cv.put("balance", prevBalance);
-                db.update("Accounts", cv, "id = ?", new String[] { oldRecordData.getAccount().getId() });
-            }
-        }
-
-        if (isNeedToUpdateAccounts(record) || oldRecordData == null) {
-            if (record.isIncomeRecord(dbHelper)) {
-                accountBalance += amount;
-            } else {
-                accountBalance -= amount;
-            }
-
-            cv.clear();
-            cv.put("balance", accountBalance);
-            if (oldRecordData == null) {
-                cv.put("update_date", ParseDate.parseDateToString(record.getDate()));
-            }
-            //изменение баланса счета, указанного в форме
-            db.update("Accounts", cv, "id = ?", new String[] { record.getAccount().getId() });
-        }
-
-        if (oldRecordData == null) {
-            DailyBalance.updateLastDailyBalance(getContext(), record.getAccount().getId());
-        } else {
-            DailyBalance.updateOldDailyBalance(getContext(), oldRecordData, record);
-        }
-
-        ((MainActivity)getActivity()).setTotalBalance();
-    }
-
-    private boolean isNeedToUpdateAccounts(RecordData updatedData) {
-        return oldRecordData != null && (!oldRecordData.getAmount().equals(updatedData.getAmount())
-                || !oldRecordData.getAccount().equals(updatedData.getAccount())
-                || !oldRecordData.getCategory().equals(updatedData.getCategory()));
     }
 }

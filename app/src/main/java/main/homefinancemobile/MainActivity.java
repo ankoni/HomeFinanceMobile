@@ -8,7 +8,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -21,7 +20,7 @@ import java.util.Objects;
 import main.homefinancemobile.common.ConstVariables;
 import main.homefinancemobile.database.DBHelper;
 import main.homefinancemobile.fragments.account.UserAccountFragment;
-import main.homefinancemobile.fragments.category.UserCategories;
+import main.homefinancemobile.fragments.category.UserCategoriesFragment;
 import main.homefinancemobile.fragments.dailybalance.DailyBalanceFragment;
 import main.homefinancemobile.fragments.record.RecordTableFragment;
 import main.homefinancemobile.fragments.setting.Setting;
@@ -109,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 break;
             case id.userCategory:
                 getSupportFragmentManager().beginTransaction().replace(id.fragment_container,
-                        new UserCategories()).commit();
+                        new UserCategoriesFragment()).commit();
                 setTitle(string.categories_title);
                 break;
             case id.dailyBalance:
@@ -122,6 +121,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
+    /**
+     * Пересчет общего остатка и изменение текста на навигации
+     */
     public void setTotalBalance() {
         totalBalance.setText(AccountData.getTotalBalance(dbHelper).toString() + "p.");
     }

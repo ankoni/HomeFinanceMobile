@@ -23,11 +23,10 @@ import java.util.List;
 
 import main.homefinancemobile.R;
 import main.homefinancemobile.database.DBHelper;
-import main.homefinancemobile.fragments.record.RecordRowAdapter;
 import main.homefinancemobile.model.AccountData;
 import main.homefinancemobile.model.CategoryData;
 import main.homefinancemobile.model.RecordData;
-import main.homefinancemobile.form.AddRecordForm;
+import main.homefinancemobile.form.RecordForm;
 import main.homefinancemobile.utils.ParseDate;
 
 /**
@@ -113,7 +112,7 @@ public class RecordTableFragment extends Fragment {
 
     private void openForm() {
         getFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                new AddRecordForm()).addToBackStack(null).commit();
+                new RecordForm()).addToBackStack(null).commit();
     }
 
     private void openForm(RecordData data) {
@@ -124,7 +123,7 @@ public class RecordTableFragment extends Fragment {
         args.putString("accountId", data.getAccount().getId());
         args.putString("date", ParseDate.parseDateToString(data.getDate()));
         args.putBoolean("includedInBalance", data.isIncludedInBalance());
-        AddRecordForm form = new AddRecordForm();
+        RecordForm form = new RecordForm();
         form.setArguments(args);
         getFragmentManager().beginTransaction().replace(R.id.fragment_container,
                 form).addToBackStack(null).commit();

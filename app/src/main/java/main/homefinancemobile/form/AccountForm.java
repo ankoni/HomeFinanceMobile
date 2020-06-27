@@ -21,7 +21,6 @@ import java.util.Date;
 import java.util.UUID;
 
 import main.homefinancemobile.R;
-import main.homefinancemobile.fragments.account.UserAccountFragment;
 import main.homefinancemobile.common.ConstVariables;
 import main.homefinancemobile.database.DBHelper;
 import main.homefinancemobile.model.AccountData;
@@ -49,7 +48,7 @@ public class AccountForm extends AppCompatDialogFragment {
         editing = getTag().equals(ConstVariables.EDIT);
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        view = inflater.inflate(R.layout.fragment_account_form, null);
+        view = inflater.inflate(R.layout.form_account, null);
 
         accountName = view.findViewById(R.id.accountNameFieldText);
         accountBalance = view.findViewById(R.id.accountBalanceFieldText);
@@ -85,7 +84,7 @@ public class AccountForm extends AppCompatDialogFragment {
             builder.setNeutralButton("Удалить", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    UserAccountFragment.deleteAccount(getContext(), id);
+                    AccountData.deleteAccount(getContext(), id);
                     getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, getActivity().getIntent());
                 }
             });
@@ -106,9 +105,9 @@ public class AccountForm extends AppCompatDialogFragment {
                 new Date()
         );
         if (editing) {
-            UserAccountFragment.editAccount(getContext(), accountData);
+            AccountData.editAccount(getContext(), accountData);
         } else {
-            UserAccountFragment.addNewAccount(getContext(), accountData);
+            AccountData.addNewAccount(getContext(), accountData);
         }
     }
 
