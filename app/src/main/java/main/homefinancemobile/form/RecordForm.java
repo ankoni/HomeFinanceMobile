@@ -42,7 +42,7 @@ import main.homefinancemobile.utils.Validate;
  */
 public class RecordForm extends Fragment implements AdapterView.OnItemSelectedListener {
     private RecordData oldRecordData;
-    TextInputEditText amountField;
+    private TextInputEditText amountField;
     private TextInputEditText dateField;
     private DatePickerDialog.OnDateSetListener mDateSetListener;
     private Spinner accountFieldSpinner;
@@ -51,9 +51,9 @@ public class RecordForm extends Fragment implements AdapterView.OnItemSelectedLi
     private Spinner categoryFieldSpinner;
     private List<SimpleIdNameObj> categories;
     private SimpleIdNameObj selectedCategory;
-    Button calendar;
-    Bundle args;
-    DBHelper dbHelper;
+    private Button calendar;
+    private Bundle args;
+    private DBHelper dbHelper;
 
     @Override
     public View onCreateView(final LayoutInflater inflater, final ViewGroup container,
@@ -93,7 +93,7 @@ public class RecordForm extends Fragment implements AdapterView.OnItemSelectedLi
             // если запись старше 7 дней
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.DATE, -7);
-            if (cal.getTime().compareTo(oldRecordData.getDate()) > 0) {
+            if (cal.getTime().compareTo(oldRecordData.getDate()) > 0 && oldRecordData.isIncludedInBalance()) {
                 createRecordBtn.setEnabled(false);
                 createRecordBtn.setClickable(false);
             }
@@ -124,6 +124,10 @@ public class RecordForm extends Fragment implements AdapterView.OnItemSelectedLi
         dateField = view.findViewById(R.id.dateFieldText);
         calendar = view.findViewById(R.id.calendar);
 
+        if (args == null) {
+            dateField.setText(ParseDate.parseDateToString(new Date()));
+        }
+
         calendar.setOnClickListener(v -> {
             Calendar cal = Calendar.getInstance();
             int year = cal.get(Calendar.YEAR);
@@ -146,6 +150,7 @@ public class RecordForm extends Fragment implements AdapterView.OnItemSelectedLi
                     mDateSetListener,
                     year, month, day
             );
+            dialog.getDatePicker().setMaxDate(new Date().getTime());
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             dialog.show();
         });
@@ -171,7 +176,16 @@ public class RecordForm extends Fragment implements AdapterView.OnItemSelectedLi
         if (args != null) {
             String accountId = args.getString("accountId");
             SimpleIdNameObj account = accounts.stream().filter(it -> it.getId().equals(accountId)).findFirst().orElse(null);
-            if (account != null) {
+            if (account == null) {
+                AccountData deletedAccountData = AccountData.getAccount(dbHelper, accountId);
+                SimpleIdNameObj deletedAccount = deletedAccountData != null ? deletedAccountData.convertToSimpleIdNameObj() : null;
+                if (deletedAccount != null) {
+                    accounts.add(deletedAccount);
+                    accountNames.add(deletedAccount.getName());
+                    adapter.notifyDataSetChanged();
+                    accountFieldSpinner.setSelection(accounts.indexOf(deletedAccount));
+                }
+            } else {
                 accountFieldSpinner.setSelection(accounts.indexOf(account));
             }
         }
@@ -192,8 +206,18 @@ public class RecordForm extends Fragment implements AdapterView.OnItemSelectedLi
         categoryFieldSpinner.setOnItemSelectedListener(this);
         if (args != null) {
             String categoryId = args.getString("categoryId");
-            SimpleIdNameObj category = categories.stream().filter(it -> it.getId().equals(categoryId)).findFirst().get();
-            categoryFieldSpinner.setSelection(categories.indexOf(category));
+            SimpleIdNameObj category = categories.stream().filter(it -> it.getId().equals(categoryId)).findFirst().orElse(null);
+            if (category == null) {
+                SimpleIdNameObj deletedCategory = CategoryData.getCategory(dbHelper, categoryId);
+                if (deletedCategory != null) {
+                    categories.add(deletedCategory);
+                    categoryNames.add(deletedCategory.getName());
+                    adapter.notifyDataSetChanged();
+                    categoryFieldSpinner.setSelection(categories.indexOf(deletedCategory));
+                }
+            } else {
+                categoryFieldSpinner.setSelection(categories.indexOf(category));
+            }
         }
     }
 

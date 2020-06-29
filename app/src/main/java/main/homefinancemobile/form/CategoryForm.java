@@ -49,7 +49,7 @@ public class CategoryForm extends AppCompatDialogFragment {
                 .setPositiveButton(editing ? R.string.edit : R.string.add, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        accept();
+                        accept(view);
                     }
                 });
         if (editing) {
@@ -99,12 +99,12 @@ public class CategoryForm extends AppCompatDialogFragment {
     /**
      * Добавление или редактирование
      */
-    private void accept() {
+    private void accept(View view) {
         category.setName(categoryName.getText().toString());
         if (editing) {
             category.updateCategory(getContext());
         } else {
-            RadioButton btn = getView().findViewById(selectParentCategory.getCheckedRadioButtonId());
+            RadioButton btn = view.findViewById(selectParentCategory.getCheckedRadioButtonId());
             String parentName = btn.getText().toString();
             category.setId(UUID.randomUUID().toString());
             category.setParentId(parentName.equals("Доход") ? ConstVariables.INCOME_ID : ConstVariables.CONSUMPTION_ID);

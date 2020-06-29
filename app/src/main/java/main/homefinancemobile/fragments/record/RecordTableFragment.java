@@ -56,12 +56,7 @@ public class RecordTableFragment extends Fragment {
         addButton = view.findViewById(R.id.addRecord);
 
         //добавление записи
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openForm();
-            }
-        });
+        addButton.setOnClickListener(v -> openForm());
 
         //достаем данные из базы и записываем в таблицу
         dbHelper = new DBHelper(this.getContext());
@@ -91,12 +86,7 @@ public class RecordTableFragment extends Fragment {
             } while (c.moveToNext());
 
             financeTable.setAdapter(new RecordRowAdapter(this.getActivity(), recordDataList));
-            financeTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    openForm(recordDataList.get(position));
-                }
-            });
+            financeTable.setOnItemClickListener((parent, view1, position, id) -> openForm(recordDataList.get(position)));
         } else {
             TextView text = new TextView(this.getContext());
             text.setPadding(0, 40, 0, 0);

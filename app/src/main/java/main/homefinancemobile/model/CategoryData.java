@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import main.homefinancemobile.common.ConstVariables;
 import main.homefinancemobile.common.SimpleIdNameObj;
 import main.homefinancemobile.database.DBHelper;
 import main.homefinancemobile.utils.ParseDate;
@@ -109,6 +110,7 @@ public class CategoryData extends CommonData {
         DBHelper dbHelper = new DBHelper(context);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues cv = new ContentValues();
+        cv.put("name", getName() + ConstVariables.DELETED_ITEM);
         cv.put("del_date", ParseDate.parseDateToString(new Date()));
         db.update("Categories", cv, "id = ?", new String[] { getId() });
     }

@@ -20,4 +20,9 @@ public class ConstVariables {
      * ID категории Расход
      */
     public static final String CONSUMPTION_ID = "9742ffc6-8ca5-11ea-bc55-0242ac130003";
+
+    /**
+     * Пометка об удалении
+     */
+    public static final String DELETED_ITEM = "(удалено)";
 }

@@ -116,7 +116,7 @@ public class AccountData extends CommonData {
         cv.put("create_date", ParseDate.parseDateToString(data.getCreateDate()));
         cv.put("update_date", ParseDate.parseDateToString(data.getUpdateDate()));
         db.insert("Accounts", null, cv);
-        DailyBalance.updateLastDailyBalance(context, data.getId());
+        DailyBalance.updateLastDailyBalance(context);
     }
 
     public static void editAccount(Context context, AccountData data) {
@@ -177,7 +177,7 @@ public class AccountData extends CommonData {
         }
 
         if (oldRecordData == null) {
-            DailyBalance.updateLastDailyBalance(context, record.getAccount().getId());
+            DailyBalance.updateLastDailyBalance(context);
         } else {
             DailyBalance.updateOldDailyBalance(context, oldRecordData, record);
         }
